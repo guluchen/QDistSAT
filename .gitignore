@@ -72,10 +72,9 @@ distance_check_sat.egg-info/
 run.sh
 
 # ---------------------------------------------------------------------------
-# QDistSAT public scope (docs/REPO_SCOPE.md). Experimental trees → local/
+# QDistSAT public scope (docs/REPO_SCOPE.md)
 # ---------------------------------------------------------------------------
 local/
-README.md
 
 # Legacy top-level dirs (if anything remains after move to local/)
 benchmark/
