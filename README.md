@@ -3,8 +3,7 @@
 Benchmark **SAT and MaxSAT solvers** on **minimum-distance** search for **CSS / QLDPC** codes,
 using parity-check matrices `Hx`, `Hz` and logical bases `Gx`, `Gz`.
 
-Companion to [DistQLDPC](https://github.com/guluchen/DistQLDPC) (reference MaxSAT distance tool).
-Matrix files and attribution follow the same layout and [NOTICE](NOTICE).
+Matrix file layout and attribution: see [NOTICE](NOTICE).
 
 **License:** GPL-3.0-or-later ([LICENSE](LICENSE)).
 
@@ -31,7 +30,7 @@ On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Do
 
 ## Input data
 
-`data/matrices/{STEM}_Hx.txt`, `_Hz.txt`, `_Gx.txt`, `_Gz.txt` — see [data/README.md](data/README.md) and [NOTICE](NOTICE) for copyright (DistQLDPC / codeDistancePYPI).
+`data/matrices/{STEM}_Hx.txt`, `_Hz.txt`, `_Gx.txt`, `_Gz.txt` — see [data/README.md](data/README.md) and [NOTICE](NOTICE).
 
 ## Main commands
 
