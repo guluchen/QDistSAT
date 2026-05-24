@@ -9,7 +9,7 @@ This file supplements the root LICENSE (GPL-3.0-or-later).
 Copyright (C) 2025-2026 Yu-Fang Chen and contributors.
 
 Python sources under `src/qecc_sat/`, `benchmarks/benchmark_solver_performance.py`,
-and related scripts documented in README.md are part of QDistSAT and licensed under
+and related scripts documented in docs/REPO_SCOPE.md are part of QDistSAT and licensed under
 GPL-3.0-or-later (see LICENSE).
 
 QDistSAT is a companion SAT/MaxSAT benchmark harness for quantum CSS code distance.

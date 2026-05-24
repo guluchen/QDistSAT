@@ -21,11 +21,11 @@ MaxSAT reference implementation). Matrix layout and attribution match DistQLDPC;
 | `scripts/run_benchmark_stems_dir.sh` | Batch benchmark |
 | `data/matrices/` | Hx/Hz/Gx/Gz matrices ([data/README.md](../data/README.md)) |
 | `tests/` | Pytest (excluding gitignored tests) |
-| `LICENSE`, `NOTICE`, `README.md` | GPL-3.0-or-later + attributions |
+| `LICENSE`, `NOTICE` | GPL-3.0-or-later + attributions |
 
 ## Local-only (gitignored)
 
-Use the **`local/`** tree for experiments ([local/README.md](../local/README.md)):
+Use the **`local/`** tree for experiments (not published):
 
 | Subfolder | Contents |
 |-----------|----------|
@@ -41,4 +41,4 @@ Some gitignored library modules may still sit under `src/qecc_sat/` (e.g. `bb_co
 
 1. Confirm it is required by `benchmark_solver_performance.py` or its documented workflow.
 2. Remove the path from `.gitignore`.
-3. Update this file and README.
+3. Update this file and [docs/PUBLISHING.md](PUBLISHING.md).
