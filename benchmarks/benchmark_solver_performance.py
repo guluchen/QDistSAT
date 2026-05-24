@@ -19,7 +19,6 @@ Usage:
   python benchmarks/benchmark_solver_performance.py --stems BB_72_12_6 BB_90_8_10
   python benchmarks/benchmark_solver_performance.py --stems-dir data/matrices
   python benchmarks/benchmark_solver_performance.py --encodings seqcounter log
-  python benchmarks/benchmark_solver_performance.py --surface -d 11   # [[121,1,11]] surface code
   python benchmarks/benchmark_solver_performance.py -j 4              # 4 parallel configs
   python benchmarks/benchmark_solver_performance.py --auto-jobs       # ~half of idle CPUs (default)
   python benchmarks/benchmark_solver_performance.py --jobs 1          # sequential
@@ -50,7 +49,6 @@ from qecc_sat.subprocess_utils import isolate_process_session, kill_process_tree
 from qecc_sat.qecc_distance import (
     min_distance_quantum_css_split_or_logicals,
     min_distance_quantum_stabilizer_or_logicals,
-    rotated_surface_code_stabilizers,
     symplectic_from_css_nbit_rows,
 )
 
@@ -444,10 +442,8 @@ def _execute_benchmark_job(
     return r
 
 
-def _default_max_distance(stem: str, *, surface: bool) -> int:
-    """Literature ``d`` for known BB stems; 11 for surface; else ``DEFAULT_MAX_DISTANCE``."""
-    if surface:
-        return 11
+def _default_max_distance(stem: str) -> int:
+    """Literature ``d`` for known BB stems; else ``DEFAULT_MAX_DISTANCE``."""
     spec_d = LITERATURE_BB_DISTANCES.get(stem)
     if spec_d is not None:
         return int(spec_d)
@@ -459,10 +455,7 @@ def _resolve_stem_targets(args: argparse.Namespace) -> list[tuple[str, Path, int
     Build the list of ``(stem, matrix_dir, max_distance)`` to benchmark.
 
     Priority: ``--quick`` > ``--stems-dir`` > ``--stems`` > single ``--stem``.
-    ``--surface`` is handled separately and returns an empty list.
     """
-    if args.surface:
-        return []
     if args.quick:
         return [("SC_9_1_3", Path(args.benchmark_dir), 3)]
 
@@ -499,7 +492,7 @@ def _resolve_stem_targets(args: argparse.Namespace) -> list[tuple[str, Path, int
         d_val = (
             args.max_distance
             if args.max_distance is not None
-            else _default_max_distance(stem, surface=False)
+            else _default_max_distance(stem)
         )
         targets.append((stem, mdir, d_val))
     return targets
@@ -899,7 +892,7 @@ def _run_one_stem_benchmark(
     enable_stopping_closure: bool,
     enable_dynamic_deficit: bool,
 ) -> list[dict]:
-    """Run the benchmark for a single stem (or surface): header → rows → summary."""
+    """Run the benchmark for a single stem: header → rows → summary."""
     print(f"Benchmark: {label}", flush=True)
     if timeout is None:
         print(
@@ -1264,8 +1257,8 @@ def main() -> None:
         type=int,
         default=None,
         metavar="D",
-        help="Scan weights 1..D. Default: literature d for known BB stems, 11 with "
-        f"--surface, else {DEFAULT_MAX_DISTANCE}.",
+        help="Scan weights 1..D. Default: literature d for known BB stems, "
+        f"else {DEFAULT_MAX_DISTANCE}.",
     )
     parser.add_argument(
         "--timeout",
@@ -1306,11 +1299,6 @@ def main() -> None:
         "--quick",
         action="store_true",
         help="Quick run: stem=BB_36_8_3 (QT_36_8_3), max-distance=3, timeout<=30s",
-    )
-    parser.add_argument(
-        "--surface",
-        action="store_true",
-        help="Use built-in rotated surface code instead of --stem matrices",
     )
     parser.add_argument(
         "--reduce-dependent-rows",
@@ -1435,29 +1423,6 @@ def main() -> None:
     )
     if timeout is None:
         print(f"# Adaptive policy: {_format_adaptive_timeout_policy()}", flush=True)
-
-    if args.surface:
-        if args.css_split:
-            raise SystemExit("--css-split/--tanner-pruning requires --stem Hx/Hz matrices")
-        d_target = args.max_distance if args.max_distance is not None else 11
-        n_surface = d_target * d_target
-        s_surface = rotated_surface_code_stabilizers(d_target)
-        _run_one_stem_benchmark(
-            args=args,
-            label=f"[[{n_surface},1,{d_target}]] rotated surface code",
-            s=s_surface,
-            hx=None,
-            hz=None,
-            n=n_surface,
-            logical_override=None,
-            max_distance=d_target,
-            timeout=timeout,
-            workers=workers,
-            jobs=jobs,
-            enable_stopping_closure=enable_stopping_closure,
-            enable_dynamic_deficit=enable_dynamic_deficit,
-        )
-        return
 
     targets = _resolve_stem_targets(args)
     if not targets:
