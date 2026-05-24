@@ -1,0 +1,10 @@
+# Install runtime deps (mirrors pyproject.toml [project.dependencies])
+python-sat>=0.1.7.dev0,<2
+pycryptosat>=5.10,<6,!=5.11.23
+numpy>=1.20
+scipy>=1.7
+
+# Editable install from repo root:
+#   pip install -e .
+# Dev / tests:
+#   pip install -e ".[dev]"

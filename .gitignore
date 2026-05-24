@@ -1,0 +1,117 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.prof
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local env (machine-specific)
+env.sh
+.python-version
+
+# Benchmark / run artifacts (regenerate locally)
+logs/*
+!logs/.gitkeep
+*.pid
+result.log
+
+# Archives and old exports at repo root
+*.zip
+*.tar.gz
+*.tgz
+
+# MaxSAT binaries and vendor trees (manifest + README stay tracked)
+bin/maxsat/*
+!bin/maxsat/README.md
+!bin/maxsat/manifest.json
+
+# Legacy / scratch at repo root (safe to delete locally; see docs/PUBLISHING.md)
+bb33/
+bb_profile.svg
+TODO
+distance_check_sat.egg-info/
+run.sh
+
+# ---------------------------------------------------------------------------
+# QDistSAT public scope (docs/REPO_SCOPE.md). Experimental trees → local/
+# ---------------------------------------------------------------------------
+local/*
+!local/README.md
+
+# Legacy top-level dirs (if anything remains after move to local/)
+benchmark/
+examples/
+new_benchmark/
+packages/
+tools/
+
+benchmarks/*
+!benchmarks/benchmark_solver_performance.py
+
+scripts/*
+!scripts/download_maxsat_solvers.py
+!scripts/parse_benchmark_log_to_latex.py
+!scripts/run_benchmark_stems_dir.sh
+
+# Library modules off the benchmark / precompute-logicals path
+src/qecc_sat/bb_code_capacity.py
+src/qecc_sat/circuit_distance_sat.py
+src/qecc_sat/classical_code_distance.py
+src/qecc_sat/distance_check.py
+src/qecc_sat/distance_check_gf2.py
+src/qecc_sat/matrix_market_gf2.py
+src/qecc_sat/cli/distance_from_hx_hz.py
+src/qecc_sat/cli/distance_from_hx_hz_or.py
+src/qecc_sat/cli/css_distance.py
+src/qecc_sat/cli/search_css_pysat.py
+
+tests/test_bb_literature_generation.py
+tests/test_distance_blocking.py
+tests/test_distance_from_both_sides.py
+tests/test_distance_parity_check.py
+tests/test_distance_logical_basis.py
+
+data/stim/
+
+# Open-WBO local build (large; use scripts/download_maxsat_solvers.py --build open-wbo)
+bin/maxsat/open-wbo/
+

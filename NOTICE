@@ -1,0 +1,60 @@
+QDistSAT — Third-Party and Data Notices
+=========================================
+
+This file supplements the root LICENSE (GPL-3.0-or-later).
+
+1. QDistSAT application (GPL)
+-----------------------------
+
+Copyright (C) 2025-2026 Yu-Fang Chen and contributors.
+
+Python sources under `src/qecc_sat/`, `benchmarks/benchmark_solver_performance.py`,
+and related scripts documented in README.md are part of QDistSAT and licensed under
+GPL-3.0-or-later (see LICENSE).
+
+QDistSAT is a companion SAT/MaxSAT benchmark harness for quantum CSS code distance.
+It shares benchmark matrices and licensing alignment with
+[DistQLDPC](https://github.com/guluchen/DistQLDPC).
+
+2. Benchmark matrices (`data/matrices/`)
+----------------------------------------
+
+Matrix files follow the DistQLDPC layout: `{stem}_Hx.txt`, `_Hz.txt`, `_Gx.txt`,
+`_Gz.txt` (GF(2), space-separated 0/1 rows).
+
+### 2a. Derived from codeDistancePYPI (MIT)
+
+Some stems were converted from the
+[codeDistancePYPI](https://github.com/m-webster/codeDistancePYPI) examples
+(MIT License; Copyright (c) 2026 Mark Alan Webster, Abraham Jacob, Oscar Higgott):
+
+- **AJ_*** — AJ_01, AJ_04, AJ_07, AJ_10, AJ_13, AJ_52
+- **PK_*** — PK_31
+- **TN_*** — TN_36_8_4, TN_72_8_8, TN_108_2_12, TN_144_2_13, TN_180_2_17,
+  TN_216_4_18, TN_252_2_21, TN_288_2_24, TN_324_4_25, TN_360_4_24, TN_396_4_26,
+  TN_432_8_33, TN_468_4_31, TN_496_2_32, TN_504_2_45, TN_540_4_40, TN_576_2_57,
+  TN_576_2_59, TN_612_2_52, TN_648_10_71, TN_648_14_50, TN_684_2_29
+- **xu_*** — xu_16, xu_21, xu_30, xu_42
+
+Redistribution of these files must retain the upstream MIT copyright and permission
+notice from the codeDistancePYPI repository.
+
+### 2b. Other stems (BB_*, QT_*, GB_*, …)
+
+Provided under the QDistSAT / DistQLDPC repository license (GPL-3.0-or-later)
+unless otherwise noted in commit history or per-file headers.
+
+For the canonical attribution text and preprocessing notes, see DistQLDPC
+[NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE).
+
+3. External MaxSAT binaries (`bin/maxsat/`)
+-------------------------------------------
+
+Not shipped in git. After download, third-party solvers (MSE builds, Open-WBO,
+COMiniSatPS / `glucose_release`, etc.) remain under their upstream licenses.
+See `bin/maxsat/README.md` and `bin/maxsat/manifest.json`.
+
+4. PySAT / python-sat
+---------------------
+
+Runtime dependency; licensed separately (MIT). See https://pysathq.github.io/

@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "comment": "Third-party MaxSAT binaries live under bin/maxsat/<id>/ (gitignored). Run: python scripts/download_maxsat_solvers.py",
+  "solvers": [
+    {
+      "id": "cashw-coreplus",
+      "solver_type": "cashw-coreplus",
+      "title": "CASHWMaxSAT-CorePlus (MSE 2023 exact)",
+      "linux_elf": true,
+      "zip_url": "https://maxsat-evaluations.github.io/2023/mse23-solver-src/exact/CASHWMaxSAT-CorePlus.zip",
+      "executable_relpath": "CASHWMaxSAT-CorePlus/bin/cashwmaxsatcoreplus",
+      "command": ["{exe}", "-bm", "-m", "{wcnf}"],
+      "output_format": "o_v_lines"
+    },
+    {
+      "id": "cashw-coreplus-mse22",
+      "solver_type": "cashw-coreplus-mse22",
+      "title": "CASHWMaxSAT-CorePlus (MSE 2022 complete)",
+      "linux_elf": true,
+      "zip_url": "https://maxsat-evaluations.github.io/2022/mse22-solver-src/complete/Cashwmaxsat-CorePlus.zip",
+      "executable_relpath": "Cashwmaxsat-CorePlus/bin/cashwmaxsatcoreplus",
+      "command": ["{exe}", "-bm", "-m", "{wcnf}"],
+      "output_format": "o_v_lines"
+    },
+    {
+      "id": "evalmaxsat",
+      "solver_type": "evalmaxsat",
+      "title": "EvalMaxSAT (MSE 2023 exact)",
+      "linux_elf": true,
+      "zip_url": "https://maxsat-evaluations.github.io/2023/mse23-solver-src/exact/EvalMaxSAT.zip",
+      "executable_relpath": "EvalMaxSAT/bin/EvalMaxSAT",
+      "command": ["{exe}", "{wcnf}"],
+      "output_format": "o_v_lines"
+    },
+    {
+      "id": "maxcdcl",
+      "solver_type": "maxcdcl",
+      "title": "MaxCDCL static (MSE 2023 exact)",
+      "linux_elf": true,
+      "zip_url": "https://maxsat-evaluations.github.io/2023/mse23-solver-src/exact/MaxCDCL.zip",
+      "executable_relpath": "MaxCDCL/bin/maxcdcl_static",
+      "command": ["{exe}", "{wcnf}"],
+      "output_format": "o_v_lines"
+    },
+    {
+      "id": "open-wbo",
+      "solver_type": "open-wbo",
+      "title": "Open-WBO (build from source; not bundled)",
+      "linux_elf": false,
+      "zip_url": null,
+      "git_url": "https://github.com/sat-group/open-wbo.git",
+      "git_ref": "master",
+      "build": "make r",
+      "executable_relpath": "open-wbo",
+      "command": ["{exe}", "{wcnf}"],
+      "output_format": "o_v_lines"
+    },
+    {
+      "id": "glucose_release",
+      "solver_type": "glucose_release",
+      "title": "COMiniSatPS MaxSAT (glucose_release; manual drop-in)",
+      "linux_elf": false,
+      "install_layout": "flat",
+      "zip_url": null,
+      "executable_relpath": "glucose_release",
+      "command": ["{exe}", "-verb=0", "{wcnf}", "{out}"],
+      "output_format": "cominisatps_optimal"
+    }
+  ]
+}
