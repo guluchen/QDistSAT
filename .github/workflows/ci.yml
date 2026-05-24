@@ -23,9 +23,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
       - name: Run tests
-        run: |
-          python -m pytest tests/test_maxsat_registry.py tests/test_subprocess_utils.py \
-            tests/test_maxsat_distance.py tests/test_distance_from_bottom.py \
-            tests/test_distance_from_top.py tests/test_distance_css_split.py \
-            tests/test_log_encoding.py tests/test_basic.py tests/test_tseitin_xor.py \
-            tests/test_tanner_pruning.py -q
+        run: python -m pytest tests/ -q

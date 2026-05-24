@@ -104,12 +104,6 @@ src/qecc_sat/cli/distance_from_hx_hz_or.py
 src/qecc_sat/cli/css_distance.py
 src/qecc_sat/cli/search_css_pysat.py
 
-tests/test_bb_literature_generation.py
-tests/test_distance_blocking.py
-tests/test_distance_from_both_sides.py
-tests/test_distance_parity_check.py
-tests/test_distance_logical_basis.py
-
 data/stim/
 
 # Open-WBO local build (large; use scripts/download_maxsat_solvers.py --build open-wbo)
