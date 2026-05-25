@@ -2,11 +2,13 @@
 """
 One-shot setup for ``benchmarks/benchmark_solver_performance.py`` default run.
 
-Installs:
+Installs (default = full benchmark stack):
   - Python extras: z3-solver, cvc5 (SMT backends z3py / cvc5)
+  - codeDistancePYPI pip extra + dist-m4ri binary (``cd-*`` comparison solvers)
   - External MaxSAT zips + Open-WBO (``download_maxsat_solvers.py --bench``)
   - DistQLDPC reference binary (``bin/distqldpc``)
-  - Optional: codeDistancePYPI (``--with-comparison`` → ``pip install -e ".[comparison]"``)
+
+Use ``--no-comparison`` to skip codedistance / dist-m4ri (large pip deps).
 
 PySAT SAT/RC2 solvers need only ``pip install -e ".[dev]"`` (no download).
 
@@ -99,6 +101,22 @@ def _run_pip_benchmark_extras(*, dev: bool, comparison: bool) -> None:
         _pip_install_one(spec)
 
 
+def _run_dist_m4ri(*, no_install_deps: bool, force: bool) -> None:
+    cmd = [sys.executable, str(REPO_ROOT / "scripts" / "install_dist_m4ri.py")]
+    if no_install_deps:
+        cmd.append("--no-install-deps")
+    if force:
+        cmd.append("--force")
+    print(f"# {' '.join(cmd)}", flush=True)
+    try:
+        subprocess.check_call(cmd, cwd=REPO_ROOT)
+    except subprocess.CalledProcessError:
+        print(
+            "# Warning: dist-m4ri install failed (cd-m4ri-cc will stay unavailable)",
+            flush=True,
+        )
+
+
 def _run_maxsat_bench(*, no_distqldpc: bool, no_install_deps: bool, force: bool) -> None:
     cmd = [
         sys.executable,
@@ -117,7 +135,7 @@ def _run_maxsat_bench(*, no_distqldpc: bool, no_install_deps: bool, force: bool)
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Install all optional benchmark dependencies (SMT pip + MaxSAT + DistQLDPC)",
+        description="Install full benchmark dependencies (SMT, MaxSAT, DistQLDPC, codeDistance)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "After install, run:\n"
@@ -141,9 +159,9 @@ def main() -> None:
         help="Also install pytest via pip install -e '.[dev,benchmark]'",
     )
     parser.add_argument(
-        "--with-comparison",
+        "--no-comparison",
         action="store_true",
-        help="Install codeDistancePYPI via pip install -e '.[comparison]' and build dist-m4ri (cd-m4ri-cc)",
+        help="Skip pip install -e '.[comparison]' and dist-m4ri (cd-gurobi, cd-mip-scip, cd-m4ri-cc, cd-magma)",
     )
     parser.add_argument(
         "--skip-maxsat",
@@ -163,9 +181,16 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Force reinstall MaxSAT/DistQLDPC")
     args = parser.parse_args()
 
+    install_comparison = not args.no_comparison
+
     if args.list:
-        print("# Python SMT backends", flush=True)
+        print("# Python SMT + codeDistance", flush=True)
         _print_pip_solver_status()
+        print("\n# dist-m4ri (cd-m4ri-cc)", flush=True)
+        subprocess.check_call(
+            [sys.executable, str(REPO_ROOT / "scripts" / "install_dist_m4ri.py"), "--status"],
+            cwd=REPO_ROOT,
+        )
         print("\n# External MaxSAT + DistQLDPC", flush=True)
         subprocess.check_call(
             [
@@ -178,23 +203,11 @@ def main() -> None:
         return
 
     if not args.skip_pip:
-        _run_pip_benchmark_extras(dev=args.with_dev, comparison=args.with_comparison)
+        _run_pip_benchmark_extras(dev=args.with_dev, comparison=install_comparison)
         print(flush=True)
 
-    if args.with_comparison:
-        cmd = [sys.executable, str(REPO_ROOT / "scripts" / "install_dist_m4ri.py")]
-        if args.no_install_system_deps:
-            cmd.append("--no-install-deps")
-        if args.force:
-            cmd.append("--force")
-        print(f"# {' '.join(cmd)}", flush=True)
-        try:
-            subprocess.check_call(cmd, cwd=REPO_ROOT)
-        except subprocess.CalledProcessError:
-            print(
-                "# Warning: dist-m4ri install failed (cd-m4ri-cc will stay unavailable)",
-                flush=True,
-            )
+    if install_comparison:
+        _run_dist_m4ri(no_install_deps=args.no_install_system_deps, force=args.force)
         print(flush=True)
 
     if not args.skip_maxsat:
