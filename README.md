@@ -43,16 +43,9 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -e ".[dev]"
 
 # optional solvers: SMT (z3py, cvc5) + MaxSAT binaries + DistQLDPC
-# (if install_benchmark_deps.py is missing, use download_maxsat_solvers.py --bench instead)
-if [ -f scripts/install_benchmark_deps.py ]; then
-  python3 scripts/install_benchmark_deps.py
-  python3 scripts/install_benchmark_deps.py --list
-else
-  python3 -m pip install z3-solver cvc5
-  python3 scripts/download_maxsat_solvers.py --bench
-  python3 scripts/download_maxsat_solvers.py --list
-fi
-# ./bin/distqldpc data/matrices/BB_108_8_10   # smoke test after distqldpc shows OK
+python3 scripts/install_benchmark_deps.py
+python3 scripts/install_benchmark_deps.py --list   # distqldpc / maxcdcl should be OK
+# ./bin/distqldpc data/matrices/BB_108_8_10   # smoke test
 
 # logical bases (if Gx/Gz missing; requires pip install above)
 precompute-logicals BB_108_8_10
