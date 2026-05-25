@@ -39,6 +39,6 @@ Run all six in parallel (default 60s per config, all default solvers, one log pe
 ```bash
 source venv/bin/activate   # or: export PYTHON=$PWD/venv/bin/python
 pip install -e ".[dev]"
-./scripts/run_benchmark_six_stemdirs.sh
-./scripts/run_benchmark_six_stemdirs.sh --timeout 120 --foreground
+./scripts/run_benchmark_six_stemdirs.sh              # default: -d 20, --timeout 28800
+./scripts/run_benchmark_six_stemdirs.sh -d 20 --timeout 120 --foreground
 ```

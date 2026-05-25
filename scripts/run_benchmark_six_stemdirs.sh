@@ -15,7 +15,8 @@
 #
 set -euo pipefail
 
-DEFAULT_TIMEOUT=60
+DEFAULT_TIMEOUT=7200
+DEFAULT_MAX_DISTANCE=20
 STEM_DIRS=(BB BB2 QT QT2 LP LP2)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,6 +25,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DATA_ROOT="${REPO_ROOT}/data"
 LOG_DIR="${REPO_ROOT}/logs"
 TIMEOUT="${DEFAULT_TIMEOUT}"
+MAX_DISTANCE="${DEFAULT_MAX_DISTANCE}"
 JOBS=""
 NO_AUTO_JOBS=0
 FOREGROUND=0
@@ -35,10 +37,11 @@ Usage: run_benchmark_six_stemdirs.sh [OPTIONS]
 
 Run benchmarks on data/{BB,BB2,QT,QT2,LP,LP2} in parallel (six processes).
 Uses default --solvers (all PySAT backends + distqldpc + codedistance).
-Per-stem max distance follows literature / benchmark defaults (no -d override).
+Scans weights 1..D for every stem (--max-distance D, default: 20).
 
 Options:
-  -t, --timeout SEC   Per-config wall-clock timeout (default: 60)
+  -d, --max-distance D  Scan upper bound per stem (default: 20)
+  -t, --timeout SEC       Per-config wall-clock timeout (default: 28800)
   -j, --jobs N        Fixed workers per directory (default: --auto-jobs)
   --no-auto-jobs      Sequential inside each directory (--jobs 1)
   --data-root DIR     Parent of BB, BB2, … (default: REPO/data)
@@ -62,6 +65,10 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    -d|--max-distance)
+      MAX_DISTANCE="$2"
+      shift 2
+      ;;
     -t|--timeout)
       TIMEOUT="$2"
       shift 2
@@ -140,13 +147,13 @@ elif [[ -n "${JOBS}" ]]; then
 else
   parallel_note="--auto-jobs per directory (~half idle CPUs)"
 fi
-echo "# timeout=${TIMEOUT}s per config, ${parallel_note}" >&2
+echo "# max_distance=${MAX_DISTANCE}, timeout=${TIMEOUT}s per config, ${parallel_note}" >&2
 echo "# solvers=default (all tools)" >&2
 echo "# pid file: ${PID_FILE}" >&2
 
 {
   echo "# started $(date '+%Y-%m-%dT%H:%M:%S%z')"
-  echo "# timeout=${TIMEOUT} parallel=${parallel_note}"
+  echo "# max_distance=${MAX_DISTANCE} timeout=${TIMEOUT} parallel=${parallel_note}"
 } > "${PID_FILE}"
 
 pids=()
@@ -156,6 +163,7 @@ for name in "${STEM_DIRS[@]}"; do
   cmd=(
     "${PYTHON}" benchmarks/benchmark_solver_performance.py
     --stems-dir "${stems_dir}"
+    --max-distance "${MAX_DISTANCE}"
     --timeout "${TIMEOUT}"
   )
   if [[ "${NO_AUTO_JOBS}" -eq 1 ]]; then
