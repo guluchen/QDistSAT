@@ -589,6 +589,8 @@ def _run_codedistance_job(
             component="Z",
         )
         result["time_sec"] = round(cd.elapsed_sec, 3)
+        if cd.timed_out and cd.d is not None and cd.d > 0:
+            result["d_ub"] = int(cd.d)
         formatted = cd.format_result()
         if formatted is not None:
             result["result"] = formatted
@@ -598,7 +600,7 @@ def _run_codedistance_job(
             status, detail = explain_codedistance_failure(config_id, cd.error)
             result["error"] = status[:60]
             print(f"# {detail}", file=sys.stderr, flush=True)
-        elif timeout_sec and cd.elapsed_sec >= float(timeout_sec) * 0.95:
+        elif cd.timed_out:
             result["error"] = "timeout"
         else:
             result["error"] = "no distance"
@@ -1137,9 +1139,9 @@ def _run_one_stem_benchmark(
         flush=True,
     )
     print(
-        "# Result: exact d if proved; on timeout, best progress (witness d or ≥lb from UNSAT scan); "
-        f"{DISTQLDPC_SOLVER} uses the same Result format (exact d, or ≥lb / ≤ub / [lb,ub]); "
-        "'-' if no progress.",
+        "# Result: exact d if proved; on timeout, best progress (≥lb / ≤ub / [lb,ub]); "
+        f"cd-* timeout: ≤w (feasible logical weight, not certified min); "
+        f"{DISTQLDPC_SOLVER}: same bound format; '-' if no progress.",
         flush=True,
     )
     print(

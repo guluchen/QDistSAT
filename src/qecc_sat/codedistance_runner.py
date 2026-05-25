@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping, Optional
 
 from . import REPO_ROOT
+from .distqldpc_runner import format_distance_bounds
 
 CODEDISTANCE_SOLVER = "codedistance"
 CD_SOLVER_PREFIX = "cd-"
@@ -325,14 +326,29 @@ class CodedistanceResult:
     elapsed_sec: float
     raw: Optional[dict[str, Any]] = None
     error: Optional[str] = None
+    timed_out: bool = False
 
     @property
     def ok(self) -> bool:
-        return self.error is None and self.d is not None
+        """Exact distance only (proven finish within limit, d > 0)."""
+        return (
+            self.error is None
+            and self.d is not None
+            and self.d > 0
+            and not self.timed_out
+        )
 
     def format_result(self) -> Optional[str]:
-        if self.d is None:
+        """
+        Benchmark Result column.
+
+        On wall-clock / ``maxTime`` stop, codeDistance often still returns a feasible
+        logical weight (an **upper bound** ``d ≤ w``), not a certified minimum.
+        """
+        if self.d is None or self.d <= 0:
             return None
+        if self.timed_out:
+            return format_distance_bounds(ub=int(self.d))
         return str(int(self.d))
 
 
@@ -393,6 +409,11 @@ def run_codedistance(
             error=short,
         )
     elapsed = time.perf_counter() - t0
+    timed_out = bool(
+        timeout_sec is not None
+        and timeout_sec > 0
+        and elapsed >= float(timeout_sec) * 0.95
+    )
     d_val = out.get("d") if isinstance(out, dict) else None
     d_int: Optional[int] = None
     if d_val is not None:
@@ -409,4 +430,5 @@ def run_codedistance(
         k=int(k_val) if k_val is not None else None,
         elapsed_sec=elapsed,
         raw=out if isinstance(out, dict) else None,
+        timed_out=timed_out,
     )

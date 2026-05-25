@@ -3,6 +3,7 @@
 from qecc_sat.codedistance_runner import (
     CODEDISTANCE_BENCH_CONFIGS,
     CODEDISTANCE_SOLVER,
+    CodedistanceResult,
     codedistance_solver_id,
     explain_codedistance_failure,
     expand_codedistance_solver_requests,
@@ -46,6 +47,32 @@ def test_explain_dist_m4ri_and_magma_errors():
     )
     assert "magma" in s2.lower()
     assert "Magma" in d2
+
+
+def test_codedistance_timeout_formats_upper_bound():
+    r = CodedistanceResult(
+        method="GurobiDist",
+        d=14,
+        n=144,
+        k=14,
+        elapsed_sec=60.0,
+        timed_out=True,
+    )
+    assert r.format_result() == "≤14"
+    assert not r.ok
+
+
+def test_codedistance_zero_distance_not_ok():
+    r = CodedistanceResult(
+        method="dist_m4ri_CC",
+        d=0,
+        n=144,
+        k=14,
+        elapsed_sec=60.0,
+        timed_out=True,
+    )
+    assert r.format_result() is None
+    assert not r.ok
 
 
 def test_resolve_and_is_codedistance():
