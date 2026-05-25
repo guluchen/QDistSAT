@@ -33,8 +33,9 @@ import os
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from multiprocessing import Process, Queue
+import threading
 from pathlib import Path
 from queue import Empty
 from typing import Any, Iterable, List, Optional
@@ -67,6 +68,7 @@ from qecc_sat.distqldpc_runner import (
     format_distance_bounds,
     run_distqldpc,
 )
+from qecc_sat.job_timeout import run_isolated_process
 from qecc_sat.maxsat_registry import external_maxsat_skip_reason, maxsat_runnable_on_host
 from qecc_sat.maxsat_solver import is_external_maxsat_solver, is_maxsat_solver
 from qecc_sat.sat_solver import NATIVE_ONLY_CARD_SOLVERS, XOR_SUPPORTED_SOLVERS, SolverType
@@ -80,6 +82,7 @@ from qecc_sat.qecc_distance import (
 DEFAULT_STEM = "BB_72_12_6"
 DEFAULT_MAX_DISTANCE = 6
 DEFAULT_BENCHMARK_TIMEOUT_SEC = 180.0  # 3 min per (solver, encoding) config
+DEFAULT_STEM_PIPELINE_RATIO = 0.85  # unlock next stem when this fraction of configs finish
 DEFAULT_ENCODINGS = ["seqcounter", "kmtotalizer"]
 # minisatgh is listed by PySAT but often not built (NoSuchSolverError on macOS).
 DEFAULT_BENCHMARK_SOLVERS = [
@@ -388,10 +391,139 @@ def _codedistance_job(config_id: str) -> _BenchmarkJob:
     )
 
 
-def _is_serial_benchmark_job(job: _BenchmarkJob) -> bool:
-    return job.solver_name == DISTQLDPC_SOLVER or is_codedistance_solver(
-        job.solver_name
-    )
+def _spawn_process_pool(max_workers: int) -> ProcessPoolExecutor:
+    """Process pool safe for Gurobi/Magma (spawn, not fork). Requires Python 3.11+."""
+    import multiprocessing as mp
+
+    ctx = mp.get_context("spawn")
+    return ProcessPoolExecutor(max_workers=max_workers, mp_context=ctx)
+
+
+def _run_benchmark_job_batch(
+    *,
+    jobs: list[_BenchmarkJob],
+    workers: int,
+    s: list[list[int]],
+    hx: Optional[list[list[int]]],
+    hz: Optional[list[list[int]]],
+    n: int,
+    max_distance: int,
+    timeout: float,
+    logical_override: Optional[list[list[int]]],
+    use_solve_limited_interrupt: bool,
+    use_css_for,
+    css_split_cardinality: str,
+    enable_stopping_closure: bool,
+    enable_dynamic_deficit: bool,
+    dynamic_block_limit: int,
+    stem: str,
+    matrix_dir: Path,
+    print_rows: bool,
+    use_spawn: bool,
+) -> dict[tuple[str, str, str], dict]:
+    """Run jobs in one ProcessPool (spawn when ``use_spawn``); map keyed by ``_job_key_from_job``."""
+    by_job: dict[tuple[str, str, str], dict] = {}
+    if not jobs:
+        return by_job
+    n_workers = min(workers, len(jobs))
+
+    def _submit(pool: ProcessPoolExecutor, job: _BenchmarkJob):
+        return pool.submit(
+            _execute_benchmark_job,
+            s,
+            hx,
+            hz,
+            n,
+            max_distance,
+            job,
+            timeout,
+            logical_override,
+            use_solve_limited_interrupt,
+            use_css_for(job),
+            css_split_cardinality,
+            enable_stopping_closure,
+            enable_dynamic_deficit,
+            dynamic_block_limit,
+            stem=stem,
+            matrix_dir=matrix_dir,
+        )
+
+    if use_spawn:
+        try:
+            pool_ctx = _spawn_process_pool(n_workers)
+        except TypeError:
+            print(
+                "# Warning: Python <3.11 has no spawn ProcessPool; "
+                "comparison backends use fork pool or sequential fallback",
+                flush=True,
+            )
+            use_spawn = False
+        else:
+            with pool_ctx as pool:
+                futures = {_submit(pool, job): job for job in jobs}
+                by_job.update(
+                    _gather_benchmark_futures(futures, print_rows=print_rows)
+                )
+            return by_job
+
+    if n_workers <= 1:
+        for job in jobs:
+            r = _execute_benchmark_job(
+                s,
+                hx,
+                hz,
+                n,
+                max_distance,
+                job,
+                timeout,
+                logical_override,
+                use_solve_limited_interrupt,
+                use_css_for(job),
+                css_split_cardinality,
+                enable_stopping_closure,
+                enable_dynamic_deficit,
+                dynamic_block_limit,
+                stem=stem,
+                matrix_dir=matrix_dir,
+            )
+            by_job[_job_key_from_job(job)] = r
+            if print_rows:
+                _print_result_row(r)
+        return by_job
+
+    with ProcessPoolExecutor(max_workers=n_workers) as pool:
+        futures = {_submit(pool, job): job for job in jobs}
+        by_job.update(_gather_benchmark_futures(futures, print_rows=print_rows))
+    return by_job
+
+
+def _gather_benchmark_futures(
+    futures: dict,
+    *,
+    print_rows: bool,
+) -> dict[tuple[str, str, str], dict]:
+    by_job: dict[tuple[str, str, str], dict] = {}
+    for fut in as_completed(futures):
+        job = futures[fut]
+        try:
+            r = fut.result()
+        except Exception as e:
+            r = {
+                "solver": job.solver_name,
+                "cardinality": job.cardinality_method,
+                "encoding": job.display_encoding,
+                "ok": False,
+                "time_sec": None,
+                "result": None,
+                "vars": None,
+                "clauses": None,
+                "clauses_approx": False,
+                "error": str(e).replace("\n", " ")[:60],
+            }
+        by_job[_job_key_from_job(job)] = r
+        if print_rows:
+            _print_result_row(r)
+    return by_job
 
 
 def _collect_benchmark_jobs(
@@ -547,7 +679,12 @@ def _run_distqldpc_job(
     return result
 
 
-def _run_codedistance_job(
+def _codedistance_needs_isolated_kill(config_id: str) -> bool:
+    """Gurobi / MIP run in-process; use disposable child + kill on wall-clock timeout."""
+    return config_id in ("gurobi", "mip-scip")
+
+
+def _run_codedistance_job_compute(
     hx: list[list[int]],
     hz: list[list[int]],
     timeout_sec: Optional[float],
@@ -611,6 +748,64 @@ def _run_codedistance_job(
         result["error"] = status[:60]
         print(f"# {detail}", file=sys.stderr, flush=True)
     return result
+
+
+def _run_codedistance_job(
+    hx: list[list[int]],
+    hz: list[list[int]],
+    timeout_sec: Optional[float],
+    config_id: str,
+) -> dict:
+    if (
+        timeout_sec is not None
+        and timeout_sec > 0
+        and _codedistance_needs_isolated_kill(config_id)
+    ):
+        result, err = run_isolated_process(
+            _run_codedistance_job_compute,
+            (hx, hz, timeout_sec, config_id),
+            timeout_sec=float(timeout_sec),
+        )
+        if err == "timeout":
+            method = next(
+                m for cid, m, _ in CODEDISTANCE_BENCH_CONFIGS if cid == config_id
+            )
+            return {
+                "solver": codedistance_solver_id(config_id),
+                "cardinality": config_id,
+                "encoding": method,
+                "ok": False,
+                "time_sec": round(float(timeout_sec), 3),
+                "result": None,
+                "vars": None,
+                "clauses": None,
+                "clauses_approx": False,
+                "error": "timeout",
+                "d_lb": None,
+                "d_ub": None,
+            }
+        if err:
+            method = next(
+                m for cid, m, _ in CODEDISTANCE_BENCH_CONFIGS if cid == config_id
+            )
+            return {
+                "solver": codedistance_solver_id(config_id),
+                "cardinality": config_id,
+                "encoding": method,
+                "ok": False,
+                "time_sec": None,
+                "result": None,
+                "vars": None,
+                "clauses": None,
+                "clauses_approx": False,
+                "error": err[:60],
+                "d_lb": None,
+                "d_ub": None,
+            }
+        return result if isinstance(result, dict) else _run_codedistance_job_compute(
+            hx, hz, timeout_sec, config_id
+        )
+    return _run_codedistance_job_compute(hx, hz, timeout_sec, config_id)
 
 
 def _execute_benchmark_job(
@@ -956,6 +1151,11 @@ def load_matrix_css(
     return s, hx, hz, n, logical, reduction_stats
 
 
+def _solver_uses_external_binary(solver_type: SolverType) -> bool:
+    """MaxSAT CLI / WCNF subprocess already has an isolated PID (timeout class A)."""
+    return is_external_maxsat_solver(solver_type)
+
+
 def run_one(
     s: list[list[int]],
     n: int,
@@ -976,6 +1176,175 @@ def run_one(
     dynamic_block_limit: int = 5000,
 ) -> dict:
     """Run min_distance for one (solver, encoding, cardinality method)."""
+    if (
+        timeout_sec is not None
+        and timeout_sec > 0
+        and not _solver_uses_external_binary(solver_type)
+    ):
+        return _run_one_with_isolated_timeout(
+            s,
+            n,
+            max_distance,
+            solver_type,
+            encoding,
+            float(timeout_sec),
+            hx=hx,
+            hz=hz,
+            cardinality_method=cardinality_method,
+            logical_basis_override=logical_basis_override,
+            use_solve_limited_interrupt=use_solve_limited_interrupt,
+            use_css_split=use_css_split,
+            css_split_cardinality=css_split_cardinality,
+            enable_stopping_closure=enable_stopping_closure,
+            enable_dynamic_deficit=enable_dynamic_deficit,
+            dynamic_block_limit=dynamic_block_limit,
+        )
+    return _run_one_direct(
+        s,
+        n,
+        max_distance,
+        solver_type,
+        encoding,
+        timeout_sec,
+        hx=hx,
+        hz=hz,
+        cardinality_method=cardinality_method,
+        logical_basis_override=logical_basis_override,
+        use_solve_limited_interrupt=use_solve_limited_interrupt,
+        use_css_split=use_css_split,
+        css_split_cardinality=css_split_cardinality,
+        enable_stopping_closure=enable_stopping_closure,
+        enable_dynamic_deficit=enable_dynamic_deficit,
+        dynamic_block_limit=dynamic_block_limit,
+    )
+
+
+def _run_one_with_isolated_timeout(
+    s: list[list[int]],
+    n: int,
+    max_distance: int,
+    solver_type: SolverType,
+    encoding: Optional[EncType],
+    timeout_sec: float,
+    *,
+    hx: Optional[list[list[int]]] = None,
+    hz: Optional[list[list[int]]] = None,
+    cardinality_method: str = "standard",
+    logical_basis_override: Optional[list[list[int]]] = None,
+    use_solve_limited_interrupt: bool = False,
+    use_css_split: bool = False,
+    css_split_cardinality: str = "stepwise",
+    enable_stopping_closure: bool = False,
+    enable_dynamic_deficit: bool = False,
+    dynamic_block_limit: int = 5000,
+) -> dict:
+    """PySAT / RC2 / SMT: disposable child process + kill (timeout class B)."""
+    if is_maxsat_solver(solver_type):
+        encoding_name = "seqcounter"
+    elif use_css_split:
+        encoding_name = next((k for k, v in ENC_MAP.items() if v == encoding), "seqcounter")
+    elif cardinality_method == "log":
+        encoding_name = "seqcounter"
+    elif encoding:
+        encoding_name = next((k for k, v in ENC_MAP.items() if v == encoding), "?")
+    else:
+        encoding_name = "seqcounter"
+
+    result = {
+        "solver": solver_type.value,
+        "cardinality": "maxsat" if is_maxsat_solver(solver_type) else cardinality_method,
+        "encoding": "maxsat" if is_maxsat_solver(solver_type) else encoding_name,
+        "ok": False,
+        "time_sec": None,
+        "result": None,
+        "vars": None,
+        "clauses": None,
+        "clauses_approx": False,
+        "error": None,
+    }
+    res, elapsed, err, nvars, nclauses, clauses_approx, partial = _run_in_subprocess_with_timeout(
+        s,
+        hx,
+        hz,
+        solver_type.value,
+        encoding_name,
+        max_distance,
+        cardinality_method,
+        timeout_sec,
+        logical_basis_override,
+        use_solve_limited_interrupt,
+        use_css_split,
+        css_split_cardinality,
+        enable_stopping_closure,
+        enable_dynamic_deficit,
+        dynamic_block_limit,
+    )
+    if err == "timeout":
+        result["error"] = "timeout"
+        result["time_sec"] = round(timeout_sec, 3)
+        partial_res = _format_partial_distance(partial)
+        if partial_res is not None:
+            result["result"] = partial_res
+        if partial:
+            pv = partial.get("nof_vars")
+            pc = partial.get("nof_clauses")
+            if pv is not None:
+                result["vars"] = pv
+            if pc is not None:
+                result["clauses"] = pc
+                _, result["clauses_approx"] = _resolve_clause_count(
+                    {"nof_clauses": pc}, solver_type
+                )
+        return result
+    if err:
+        result["error"] = err[:60]
+        return result
+    result["ok"] = True
+    result["time_sec"] = round(elapsed or 0.0, 3)
+    result["result"] = res
+    result["vars"] = nvars
+    result["clauses"] = nclauses
+    result["clauses_approx"] = clauses_approx
+    if is_maxsat_solver(solver_type):
+        result["cardinality"] = "maxsat"
+        result["encoding"] = "maxsat"
+    elif use_css_split:
+        result["cardinality"] = _css_split_card_label(
+            css_split_cardinality,
+            enable_stopping_closure=enable_stopping_closure,
+            enable_dynamic_deficit=enable_dynamic_deficit,
+        )
+        enc = ENC_MAP.get(encoding_name, EncType.seqcounter)
+        result["encoding"] = next((k for k, v in ENC_MAP.items() if v == enc), encoding_name)
+    elif cardinality_method == "log":
+        result["cardinality"] = "log"
+        result["encoding"] = "log"
+    elif encoding:
+        use_native_card = solver_type in NATIVE_ONLY_CARD_SOLVERS
+        result["encoding"] = "native" if use_native_card else encoding_name
+    return result
+
+
+def _run_one_direct(
+    s: list[list[int]],
+    n: int,
+    max_distance: int,
+    solver_type: SolverType,
+    encoding: Optional[EncType],
+    timeout_sec: Optional[float],
+    *,
+    hx: Optional[list[list[int]]] = None,
+    hz: Optional[list[list[int]]] = None,
+    cardinality_method: str = "standard",
+    logical_basis_override: Optional[list[list[int]]] = None,
+    use_solve_limited_interrupt: bool = False,
+    use_css_split: bool = False,
+    css_split_cardinality: str = "stepwise",
+    enable_stopping_closure: bool = False,
+    enable_dynamic_deficit: bool = False,
+    dynamic_block_limit: int = 5000,
+) -> dict:
+    """In-process or external-binary path (no extra Python Process wrapper)."""
     if is_maxsat_solver(solver_type):
         card_label = "maxsat"
         encoding_name = "seqcounter"
@@ -1012,80 +1381,39 @@ def run_one(
     }
 
     try:
-        if timeout_sec is not None and timeout_sec > 0:
-            res, elapsed, err, nvars, nclauses, clauses_approx, partial = (
-                _run_in_subprocess_with_timeout(
-                    s,
-                    hx,
-                    hz,
-                    solver_type.value,
-                    encoding_name,
-                    max_distance,
-                    cardinality_method,
-                    float(timeout_sec),
-                    logical_basis_override,
-                    use_solve_limited_interrupt,
-                    use_css_split,
-                    css_split_cardinality,
-                    enable_stopping_closure,
-                    enable_dynamic_deficit,
-                    dynamic_block_limit,
-                )
+        stats: dict = {}
+        t0 = time.perf_counter()
+        if use_css_split:
+            if hx is None or hz is None:
+                raise ValueError("--css-split requires Hx/Hz matrices")
+            res = min_distance_quantum_css_split_or_logicals(
+                hx,
+                hz,
+                max_distance=max_distance,
+                solver_type=solver_type,
+                stats=stats,
+                encoding=ENC_MAP.get(encoding_name, EncType.seqcounter),
+                sector_cardinality=css_split_cardinality,
+                parallel_css_sectors=False,
+                logical_basis_override=logical_basis_override,
+                enable_stopping_closure=enable_stopping_closure,
+                enable_dynamic_deficit=enable_dynamic_deficit,
+                dynamic_block_limit=dynamic_block_limit,
             )
-            if err == "timeout":
-                result["error"] = "timeout"
-                result["time_sec"] = round(float(timeout_sec), 3)
-                partial_res = _format_partial_distance(partial)
-                if partial_res is not None:
-                    result["result"] = partial_res
-                if partial:
-                    pv = partial.get("nof_vars")
-                    pc = partial.get("nof_clauses")
-                    if pv is not None:
-                        result["vars"] = pv
-                    if pc is not None:
-                        result["clauses"] = pc
-                        _, result["clauses_approx"] = _resolve_clause_count(
-                            {"nof_clauses": pc}, solver_type
-                        )
-                return result
-            if err:
-                result["error"] = err[:60]
-                return result
         else:
-            stats: dict = {}
-            t0 = time.perf_counter()
-            if use_css_split:
-                if hx is None or hz is None:
-                    raise ValueError("--css-split requires Hx/Hz matrices")
-                res = min_distance_quantum_css_split_or_logicals(
-                    hx,
-                    hz,
-                    max_distance=max_distance,
-                    solver_type=solver_type,
-                    stats=stats,
-                    encoding=ENC_MAP.get(encoding_name, EncType.seqcounter),
-                    sector_cardinality=css_split_cardinality,
-                    parallel_css_sectors=False,
-                    logical_basis_override=logical_basis_override,
-                    enable_stopping_closure=enable_stopping_closure,
-                    enable_dynamic_deficit=enable_dynamic_deficit,
-                    dynamic_block_limit=dynamic_block_limit,
-                )
-            else:
-                res = min_distance_quantum_stabilizer_or_logicals(
-                    s,
-                    max_distance=max_distance,
-                    solver_type=solver_type,
-                    stats=stats,
-                    encoding=ENC_MAP.get(encoding_name, EncType.seqcounter),
-                    cardinality_encoding="log" if cardinality_method == "log" else "standard",
-                    logical_basis_override=logical_basis_override,
-                )
-            elapsed = time.perf_counter() - t0
-            nvars = stats.get("nof_vars")
-            nclauses, clauses_approx = _resolve_clause_count(stats, solver_type)
-
+            res = min_distance_quantum_stabilizer_or_logicals(
+                s,
+                max_distance=max_distance,
+                solver_type=solver_type,
+                stats=stats,
+                encoding=ENC_MAP.get(encoding_name, EncType.seqcounter),
+                cardinality_encoding="log" if cardinality_method == "log" else "standard",
+                logical_basis_override=logical_basis_override,
+                timeout_sec=timeout_sec,
+            )
+        elapsed = time.perf_counter() - t0
+        nvars = stats.get("nof_vars")
+        nclauses, clauses_approx = _resolve_clause_count(stats, solver_type)
         result["ok"] = True
         result["time_sec"] = round(elapsed, 3)
         result["result"] = res
@@ -1242,76 +1570,35 @@ def _run_jobs_fixed_timeout(
             if print_rows:
                 _print_result_row(r)
     else:
-        serial_jobs = [j for j in jobs if _is_serial_benchmark_job(j)]
-        pool_jobs = [j for j in jobs if not _is_serial_benchmark_job(j)]
-        for job in serial_jobs:
-            r = _execute_benchmark_job(
-                s,
-                hx,
-                hz,
-                n,
-                max_distance,
-                job,
-                timeout,
-                logical_override,
-                use_solve_limited_interrupt,
-                use_css_for(job),
-                css_split_cardinality,
-                enable_stopping_closure,
-                enable_dynamic_deficit,
-                dynamic_block_limit,
+        n_parallel = min(workers, len(jobs))
+        print(
+            f"# {len(jobs)} configuration(s): up to {n_parallel} in parallel "
+            f"(one pool, spawn; distqldpc, cd-*, SAT/MaxSAT/SMT)",
+            flush=True,
+        )
+        by_job.update(
+            _run_benchmark_job_batch(
+                jobs=jobs,
+                workers=workers,
+                s=s,
+                hx=hx,
+                hz=hz,
+                n=n,
+                max_distance=max_distance,
+                timeout=timeout,
+                logical_override=logical_override,
+                use_solve_limited_interrupt=use_solve_limited_interrupt,
+                use_css_for=use_css_for,
+                css_split_cardinality=css_split_cardinality,
+                enable_stopping_closure=enable_stopping_closure,
+                enable_dynamic_deficit=enable_dynamic_deficit,
+                dynamic_block_limit=dynamic_block_limit,
                 stem=stem,
                 matrix_dir=matrix_dir,
+                print_rows=print_rows,
+                use_spawn=True,
             )
-            by_job[_job_key_from_job(job)] = r
-            if print_rows:
-                _print_result_row(r)
-        if not pool_jobs:
-            return by_job
-        n_workers = min(workers, len(pool_jobs))
-        with ProcessPoolExecutor(max_workers=n_workers) as pool:
-            futures = {
-                pool.submit(
-                    _execute_benchmark_job,
-                    s,
-                    hx,
-                    hz,
-                    n,
-                    max_distance,
-                    job,
-                    timeout,
-                    logical_override,
-                    use_solve_limited_interrupt,
-                    use_css_for(job),
-                    css_split_cardinality,
-                    enable_stopping_closure,
-                    enable_dynamic_deficit,
-                    dynamic_block_limit,
-                    stem=stem,
-                    matrix_dir=matrix_dir,
-                ): job
-                for job in pool_jobs
-            }
-            for fut in as_completed(futures):
-                job = futures[fut]
-                try:
-                    r = fut.result()
-                except Exception as e:
-                    r = {
-                        "solver": job.solver_name,
-                        "cardinality": job.cardinality_method,
-                        "encoding": job.display_encoding,
-                        "ok": False,
-                        "time_sec": None,
-                        "result": None,
-                        "vars": None,
-                        "clauses": None,
-                        "clauses_approx": False,
-                        "error": str(e).replace("\n", " ")[:60],
-                    }
-                by_job[_job_key_from_job(job)] = r
-                if print_rows:
-                    _print_result_row(r)
+        )
     return by_job
 
 
@@ -1328,6 +1615,227 @@ def _result_strategy(r: dict) -> str:
     if card.startswith("css-"):
         return card
     return enc or card
+
+
+@dataclass
+class _StemBenchContext:
+    stem: str
+    matrix_dir: Path
+    max_distance: int
+    label: str
+    s: list[list[int]]
+    hx: Optional[list[list[int]]]
+    hz: Optional[list[list[int]]]
+    n: int
+    logical_override: Optional[list[list[int]]]
+    by_job: dict[tuple[str, str, str], dict] = field(default_factory=dict)
+    submitted: bool = False
+    done_count: int = 0
+
+
+def _print_stem_benchmark_report(
+    *,
+    args: argparse.Namespace,
+    ctx: _StemBenchContext,
+    jobs: List["_BenchmarkJob"],
+    timeout: float,
+    enable_stopping_closure: bool,
+    enable_dynamic_deficit: bool,
+) -> list[dict]:
+    """Print full table for one stem (used after pipeline or sequential run)."""
+    print(f"Benchmark: {ctx.label}", flush=True)
+    print(f"max_distance={ctx.max_distance}, timeout={timeout}s per config", flush=True)
+    if args.css_split:
+        pruning_parts = []
+        if enable_stopping_closure:
+            pruning_parts.append("stopping-closure")
+        if enable_dynamic_deficit:
+            pruning_parts.append(f"dynamic-deficit limit={args.dynamic_block_limit}")
+        pruning_note = (
+            f" with Tanner {' + '.join(pruning_parts)}" if pruning_parts else ""
+        )
+        print(
+            f"# CSS split path enabled{pruning_note}; "
+            f"sector_cardinality={args.css_split_cardinality}",
+            flush=True,
+        )
+    print("=" * 100, flush=True)
+    print(
+        "# Clauses ~N: CNF-only estimate (weight/cardinality/OR); native XOR not counted "
+        "(CryptoMiniSat has no nof_clauses).",
+        flush=True,
+    )
+    print(
+        "# Result: exact d if proved; on timeout, best progress (≥lb / ≤ub / [lb,ub]); "
+        f"cd-* timeout: ≤w (feasible logical weight, not certified min); "
+        f"{DISTQLDPC_SOLVER}: same bound format; '-' if no progress.",
+        flush=True,
+    )
+    print(
+        f"{'Solver':<14} {'Strategy':<20} {'Time(s)':<10} "
+        f"{'Vars':<8} {'Clauses':<10} {'Result':<8} {'Status'}",
+        flush=True,
+    )
+    print("-" * 100, flush=True)
+    results = [ctx.by_job[_job_key_from_job(job)] for job in jobs]
+    for r in results:
+        _print_result_row(r)
+    ok_count = sum(1 for r in results if r["ok"])
+    print("-" * 100, flush=True)
+    print(f"Completed: {ok_count}/{len(results)}", flush=True)
+    if ok_count > 0:
+        best = min(
+            (r for r in results if r["ok"]),
+            key=lambda x: x["time_sec"] or float("inf"),
+        )
+        print(
+            f"Fastest:  {best['solver']} ({_result_strategy(best)}) "
+            f"in {best['time_sec']:.3f}s",
+            flush=True,
+        )
+    return results
+
+
+def _run_multi_stem_pipeline(
+    *,
+    args: argparse.Namespace,
+    contexts: list[_StemBenchContext],
+    jobs: List["_BenchmarkJob"],
+    timeout: float,
+    workers: int,
+    enable_stopping_closure: bool,
+    enable_dynamic_deficit: bool,
+    pipeline_ratio: float,
+) -> list[tuple[str, int, int, Optional[float], Optional[str]]]:
+    """
+    One global pool; unlock stem ``i+1`` when stem ``i`` reaches ``pipeline_ratio`` done.
+    Stragglers keep running. Final log prints stems in order.
+    """
+    per_stem = len(jobs)
+    n_stems = len(contexts)
+    unlock_at = min(per_stem, max(1, int(per_stem * pipeline_ratio + 0.999)))
+    print(
+        f"# Stem pipeline: {n_stems} stems, unlock next after {unlock_at}/{per_stem} "
+        f"configs per stem (~{pipeline_ratio:.0%})",
+        flush=True,
+    )
+    use_css_for = lambda job: args.css_split and job.cardinality_method != "maxsat"
+    lock = threading.Lock()
+    active_through = 0
+    contexts[0].submitted = True
+    pending: dict = {}
+    n_workers = min(workers, per_stem * n_stems)
+
+    def _submit_stem(pool: ProcessPoolExecutor, idx: int) -> None:
+        ctx = contexts[idx]
+        for job in jobs:
+            fut = pool.submit(
+                _execute_benchmark_job,
+                ctx.s,
+                ctx.hx,
+                ctx.hz,
+                ctx.n,
+                ctx.max_distance,
+                job,
+                timeout,
+                ctx.logical_override,
+                args.solve_limited_interrupt,
+                use_css_for(job),
+                args.css_split_cardinality,
+                enable_stopping_closure,
+                enable_dynamic_deficit,
+                args.dynamic_block_limit,
+                stem=ctx.stem,
+                matrix_dir=ctx.matrix_dir,
+            )
+            pending[fut] = (idx, job)
+
+    def _try_unlock(pool: ProcessPoolExecutor) -> None:
+        nonlocal active_through
+        with lock:
+            while active_through + 1 < n_stems:
+                cur = contexts[active_through]
+                if cur.done_count < unlock_at:
+                    break
+                active_through += 1
+                nxt = contexts[active_through]
+                if nxt.submitted:
+                    continue
+                nxt.submitted = True
+                print(
+                    f"# Pipeline: start {nxt.stem} "
+                    f"({cur.stem} {cur.done_count}/{per_stem} configs finished)",
+                    flush=True,
+                )
+                _submit_stem(pool, active_through)
+
+    try:
+        pool_ctx = _spawn_process_pool(n_workers)
+    except TypeError:
+        pool_ctx = ProcessPoolExecutor(max_workers=n_workers)
+
+    with pool_ctx as pool:
+        _submit_stem(pool, 0)
+        while pending:
+            for fut in as_completed(list(pending.keys())):
+                idx, job = pending.pop(fut)
+                ctx = contexts[idx]
+                try:
+                    r = fut.result()
+                except Exception as e:
+                    r = {
+                        "solver": job.solver_name,
+                        "cardinality": job.cardinality_method,
+                        "encoding": job.display_encoding,
+                        "ok": False,
+                        "time_sec": None,
+                        "result": None,
+                        "vars": None,
+                        "clauses": None,
+                        "clauses_approx": False,
+                        "error": str(e).replace("\n", " ")[:60],
+                    }
+                ctx.by_job[_job_key_from_job(job)] = r
+                ctx.done_count += 1
+                res_s = (
+                    str(r["result"]) if r.get("result") is not None else "-"
+                )
+                st = r.get("error") or "OK"
+                print(
+                    f"# [{ctx.stem}] {r['solver']:<14} {_result_strategy(r):<20} "
+                    f"{ctx.done_count}/{per_stem}  {res_s:<8} {st}",
+                    flush=True,
+                )
+                _try_unlock(pool)
+
+    print(flush=True)
+    print("=" * 100, flush=True)
+    print("# Final report (stems in order)", flush=True)
+    print("=" * 100, flush=True)
+
+    summaries: list[tuple[str, int, int, Optional[float], Optional[str]]] = []
+    for ctx in contexts:
+        results = _print_stem_benchmark_report(
+            args=args,
+            ctx=ctx,
+            jobs=jobs,
+            timeout=timeout,
+            enable_stopping_closure=enable_stopping_closure,
+            enable_dynamic_deficit=enable_dynamic_deficit,
+        )
+        ok_count = sum(1 for r in results if r["ok"])
+        best_time: Optional[float] = None
+        best_label: Optional[str] = None
+        if ok_count > 0:
+            best = min(
+                (r for r in results if r["ok"]),
+                key=lambda x: x["time_sec"] or float("inf"),
+            )
+            best_time = best["time_sec"]
+            best_label = f"{best['solver']} ({_result_strategy(best)})"
+        summaries.append((ctx.stem, ok_count, len(results), best_time, best_label))
+        print(flush=True)
+    return summaries
 
 
 def _print_result_row(r: dict) -> None:
@@ -1410,6 +1918,11 @@ def main() -> None:
         help="Print all --solvers names (with external MaxSAT install status) and exit",
     )
     parser.add_argument(
+        "--print-idle-cores",
+        action="store_true",
+        help="Print idle\\ttotal\\tnote and exit (for benchmark shell scripts)",
+    )
+    parser.add_argument(
         "--encodings",
         nargs="*",
         default=None,
@@ -1473,6 +1986,25 @@ def main() -> None:
         help="Maximum dynamic Tanner blocking clauses per bound round (default 5000)",
     )
     parser.add_argument(
+        "--stem-pipeline",
+        action="store_true",
+        default=None,
+        help="When multiple stems: start next stem after ~85%% of configs finish "
+        "(stragglers continue; final log reprints stems in order). Default: on.",
+    )
+    parser.add_argument(
+        "--no-stem-pipeline",
+        action="store_true",
+        help="Finish all configs for one stem before starting the next.",
+    )
+    parser.add_argument(
+        "--stem-pipeline-ratio",
+        type=float,
+        default=DEFAULT_STEM_PIPELINE_RATIO,
+        metavar="R",
+        help=f"Configs done per stem before unlocking the next (default {DEFAULT_STEM_PIPELINE_RATIO})",
+    )
+    parser.add_argument(
         "-j",
         "--jobs",
         type=int,
@@ -1497,6 +2029,11 @@ def main() -> None:
 
     if args.list_solvers:
         _print_solver_names(runnable_external=True)
+        return
+
+    if args.print_idle_cores:
+        idle, total, note = estimate_idle_cores()
+        print(f"{idle}\t{total}\t{note}", flush=True)
         return
 
     if args.solve_limited_interrupt:
@@ -1561,7 +2098,7 @@ def main() -> None:
     jobs = _collect_benchmark_jobs(solvers_to_test, encodings_to_test)
     print(
         f"# Parallel: {workers} worker(s){idle_hint} — {workers_note}; "
-        f"{len(jobs)} configuration(s) per stem",
+        f"{len(jobs)} configuration(s) per stem (single spawn pool)",
         flush=True,
     )
     print(
@@ -1574,9 +2111,26 @@ def main() -> None:
     if not targets:
         raise SystemExit("No stems resolved to run")
 
+    if args.no_stem_pipeline:
+        use_stem_pipeline = False
+    elif args.stem_pipeline:
+        use_stem_pipeline = True
+    else:
+        use_stem_pipeline = len(targets) > 1
+
+    pipeline_ratio = max(0.01, min(1.0, float(args.stem_pipeline_ratio)))
+    if use_stem_pipeline and len(targets) > 1:
+        print(
+            f"# Stem pipeline enabled (ratio={pipeline_ratio:.2f}); "
+            "live progress lines, ordered final tables at end",
+            flush=True,
+        )
+
     summaries: list[tuple[str, int, int, Optional[float], Optional[str]]] = []
+    contexts: list[_StemBenchContext] = []
+
     for idx, (stem, matrix_dir, max_distance) in enumerate(targets):
-        if idx > 0:
+        if idx > 0 and not use_stem_pipeline:
             print(flush=True)
         try:
             s_mat, hx, hz, n, logical_override, reduction_stats = load_matrix_css(
@@ -1609,6 +2163,22 @@ def main() -> None:
                 flush=True,
             )
 
+        if use_stem_pipeline and len(targets) > 1:
+            contexts.append(
+                _StemBenchContext(
+                    stem=stem,
+                    matrix_dir=matrix_dir,
+                    max_distance=max_distance,
+                    label=label,
+                    s=s_mat,
+                    hx=hx,
+                    hz=hz,
+                    n=n,
+                    logical_override=logical_override,
+                )
+            )
+            continue
+
         results = _run_one_stem_benchmark(
             args=args,
             label=label,
@@ -1637,6 +2207,20 @@ def main() -> None:
             best_time = best["time_sec"]
             best_label = f"{best['solver']} ({_result_strategy(best)})"
         summaries.append((stem, ok_count, len(results), best_time, best_label))
+
+    if contexts:
+        summaries.extend(
+            _run_multi_stem_pipeline(
+                args=args,
+                contexts=contexts,
+                jobs=jobs,
+                timeout=timeout,
+                workers=workers,
+                enable_stopping_closure=enable_stopping_closure,
+                enable_dynamic_deficit=enable_dynamic_deficit,
+                pipeline_ratio=pipeline_ratio,
+            )
+        )
 
     if len(targets) > 1:
         print(flush=True)

@@ -17,7 +17,12 @@ set -euo pipefail
 
 DEFAULT_TIMEOUT=7200
 DEFAULT_MAX_DISTANCE=20
+# Cores to leave for OS / other users when auto-splitting across six directories.
+DEFAULT_CPU_RESERVE=8
+# Cap per-directory ProcessPool workers (configs overlap via stem-pipeline; ~42 configs/stem).
+DEFAULT_JOBS_PER_DIR_CAP=48
 STEM_DIRS=(BB BB2 QT QT2 LP LP2)
+NUM_DIRS=${#STEM_DIRS[@]}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -27,9 +32,24 @@ LOG_DIR="${REPO_ROOT}/logs"
 TIMEOUT="${DEFAULT_TIMEOUT}"
 MAX_DISTANCE="${DEFAULT_MAX_DISTANCE}"
 JOBS=""
+JOBS_TOTAL=""
+JOBS_PER_DIR_CAP="${BENCH_JOBS_PER_DIR_CAP:-${DEFAULT_JOBS_PER_DIR_CAP}}"
 NO_AUTO_JOBS=0
+USE_IDLE_CORES=1
 FOREGROUND=0
 DRY_RUN=0
+
+_detect_logical_cpus() {
+  if [[ -n "${SLURM_CPUS_ON_NODE:-}" ]]; then
+    echo "${SLURM_CPUS_ON_NODE}"
+    return
+  fi
+  if command -v nproc >/dev/null 2>&1; then
+    nproc --all 2>/dev/null || nproc
+    return
+  fi
+  "${PYTHON:-python3}" -c "import os; print(os.cpu_count() or 8)"
+}
 
 usage() {
   cat <<'EOF'
@@ -42,7 +62,11 @@ Scans weights 1..D for every stem (--max-distance D, default: 20).
 Options:
   -d, --max-distance D  Scan upper bound per stem (default: 20)
   -t, --timeout SEC       Per-config wall-clock timeout (default: 28800)
-  -j, --jobs N        Fixed workers per directory (default: --auto-jobs)
+  -j, --jobs N        ProcessPool workers per directory (overrides auto-split)
+  --jobs-total N      Split N workers across six dirs (≈ N/6 each)
+  --jobs-per-dir-cap N  Max --jobs per directory (default: 48)
+  --cpu-reserve N     Cores left unassigned when auto-splitting (default: 8)
+  --use-nproc         Auto-split from nproc/SLURM_CPUS only (ignore idle sampling)
   --no-auto-jobs      Sequential inside each directory (--jobs 1)
   --data-root DIR     Parent of BB, BB2, … (default: REPO/data)
   --log-dir DIR       Log output directory (default: REPO/logs)
@@ -53,11 +77,24 @@ Options:
 Environment:
   PYTHON              Python executable (else VIRTUAL_ENV, then venv/ or .venv/)
   DATA_ROOT, LOG_DIR  Override defaults before flags
+  BENCH_CPU_RESERVE   Same as --cpu-reserve when using auto-split
+  BENCH_JOBS_TOTAL    Total worker slots across six dirs (overrides idle/nproc guess)
+  BENCH_JOBS_PER_DIR_CAP  Per-directory cap (default 48)
+
+Default auto-split uses psutil/loadavg idle cores (not nproc). On a ~200-idle-core
+node this yields ~32 workers/dir (≈192 total) unless you set BENCH_JOBS_TOTAL.
+
+Parallelism: six stem-dir processes × --jobs workers each (one spawn pool per dir).
+Within each dir, multiple stems use --stem-pipeline (default): next stem starts when
+~85%% of configs finish; stragglers continue; final log reprints stems in order.
+Do not use bare --auto-jobs here — six processes would each underestimate idle CPUs.
 
 Requires: project venv with pip install -e ".[dev]" (pysat + qecc_sat).
 
 Examples:
   ./scripts/run_benchmark_six_stemdirs.sh
+  BENCH_JOBS_TOTAL=180 ./scripts/run_benchmark_six_stemdirs.sh   # ~30 workers/dir
+  ./scripts/run_benchmark_six_stemdirs.sh --jobs-total 192 --cpu-reserve 8
   ./scripts/run_benchmark_six_stemdirs.sh -t 300 --foreground
   tail -f logs/BB_bench_*.log
 EOF
@@ -76,6 +113,22 @@ while [[ $# -gt 0 ]]; do
     -j|--jobs)
       JOBS="$2"
       shift 2
+      ;;
+    --jobs-total)
+      JOBS_TOTAL="$2"
+      shift 2
+      ;;
+    --jobs-per-dir-cap)
+      JOBS_PER_DIR_CAP="$2"
+      shift 2
+      ;;
+    --cpu-reserve)
+      DEFAULT_CPU_RESERVE="$2"
+      shift 2
+      ;;
+    --use-nproc)
+      USE_IDLE_CORES=0
+      shift
       ;;
     --no-auto-jobs)
       NO_AUTO_JOBS=1
@@ -122,6 +175,34 @@ fi
 cd "${REPO_ROOT}"
 mkdir -p "${LOG_DIR}"
 
+CPU_RESERVE="${BENCH_CPU_RESERVE:-${DEFAULT_CPU_RESERVE}}"
+IDLE_NOTE=""
+NCPU="$(_detect_logical_cpus)"
+if [[ "${NO_AUTO_JOBS}" -eq 0 && -z "${JOBS}" ]]; then
+  if [[ -n "${BENCH_JOBS_TOTAL:-}" ]]; then
+    JOBS_TOTAL="${BENCH_JOBS_TOTAL}"
+  fi
+  if [[ -z "${JOBS_TOTAL}" ]]; then
+    if [[ "${USE_IDLE_CORES}" -eq 1 ]]; then
+      IFS=$'\t' read -r IDLE_CORES NCPU IDLE_NOTE < <(bench_estimate_idle_cpus "${REPO_ROOT}")
+      JOBS_TOTAL=$(( IDLE_CORES - CPU_RESERVE ))
+    else
+      JOBS_TOTAL=$(( NCPU - CPU_RESERVE ))
+      IDLE_NOTE="nproc/SLURM=${NCPU}"
+    fi
+  fi
+  if [[ "${JOBS_TOTAL}" -lt 1 ]]; then
+    JOBS_TOTAL=1
+  fi
+  JOBS=$(( JOBS_TOTAL / NUM_DIRS ))
+  if [[ "${JOBS}" -lt 1 ]]; then
+    JOBS=1
+  fi
+  if [[ "${JOBS}" -gt "${JOBS_PER_DIR_CAP}" ]]; then
+    JOBS="${JOBS_PER_DIR_CAP}"
+  fi
+fi
+
 TS="$(date +%m%d_%H%M%S)"
 PID_FILE="${LOG_DIR}/six_stemdirs_${TS}.pids"
 
@@ -142,10 +223,16 @@ echo "# repo=${REPO_ROOT}" >&2
 echo "# python=${PYTHON}" >&2
 if [[ "${NO_AUTO_JOBS}" -eq 1 ]]; then
   parallel_note="sequential per directory (--no-auto-jobs)"
-elif [[ -n "${JOBS}" ]]; then
-  parallel_note="--jobs ${JOBS} per directory"
 else
-  parallel_note="--auto-jobs per directory (~half idle CPUs)"
+  pool_slots=$(( JOBS * NUM_DIRS ))
+  if [[ -n "${JOBS_TOTAL:-}" ]]; then
+    split_src="jobs-total=${JOBS_TOTAL}"
+  elif [[ -n "${IDLE_NOTE}" ]]; then
+    split_src="${IDLE_NOTE}; reserve ${CPU_RESERVE}"
+  else
+    split_src="${NCPU} logical CPUs; reserve ${CPU_RESERVE}"
+  fi
+  parallel_note="--jobs ${JOBS}/dir (cap ${JOBS_PER_DIR_CAP}) → ~${pool_slots} pool slots; ${split_src}"
 fi
 echo "# max_distance=${MAX_DISTANCE}, timeout=${TIMEOUT}s per config, ${parallel_note}" >&2
 echo "# solvers=default (all tools)" >&2
@@ -168,8 +255,8 @@ for name in "${STEM_DIRS[@]}"; do
   )
   if [[ "${NO_AUTO_JOBS}" -eq 1 ]]; then
     cmd+=(--no-auto-jobs --jobs 1)
-  elif [[ -n "${JOBS}" ]]; then
-    cmd+=(--jobs "${JOBS}")
+  else
+    cmd+=(--no-auto-jobs --jobs "${JOBS}")
   fi
 
   if [[ "${DRY_RUN}" -eq 1 ]]; then

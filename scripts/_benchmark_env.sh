@@ -26,6 +26,12 @@ resolve_benchmark_python() {
   return 0
 }
 
+# Print "idle<TAB>total<TAB>note" using the benchmark driver's idle sampler.
+bench_estimate_idle_cpus() {
+  local repo_root="$1"
+  (cd "${repo_root}" && "${PYTHON}" benchmarks/benchmark_solver_performance.py --print-idle-cores)
+}
+
 require_benchmark_python_deps() {
   local repo_root="$1"
   if ! "${PYTHON}" -c "from pysat.card import EncType; import qecc_sat" 2>/dev/null; then
