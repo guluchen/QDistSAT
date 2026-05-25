@@ -4,7 +4,7 @@ External MaxSAT executables used by `qecc_sat` (optional; PySAT `rc2-*` solvers 
 
 ## Install (from repo root)
 
-**Recommended** — README benchmark defaults on Linux x86_64 (`maxcdcl`, `evalmaxsat`, `open-wbo`):
+**Recommended** — all MSE zips + `open-wbo` on Linux x86_64:
 
 ```bash
 # Debian/Ubuntu: --bench auto-runs `sudo apt install -y libgmp-dev` if GMP is missing
@@ -14,8 +14,8 @@ python3 scripts/download_maxsat_solvers.py --list
 
 | Goal | Command |
 |------|---------|
-| Benchmark defaults (`maxcdcl`, `evalmaxsat`, `open-wbo`) | `--bench` |
-| Every MSE zip in `manifest.json` | no flags |
+| All MSE zips + `open-wbo` | `--bench` |
+| MSE zips only (skip Open-WBO build) | no flags |
 | Pick solvers | `--only maxcdcl evalmaxsat` |
 | Build only Open-WBO | `--build open-wbo` |
 
@@ -26,9 +26,11 @@ Re-run `--bench` safely: already-installed runnable binaries are skipped unless 
 ```
 bin/maxsat/
   manifest.json
-  maxcdcl/MaxCDCL/bin/maxcdcl_static   # from --bench
+  cashw-coreplus/...                 # from --bench
+  cashw-coreplus-mse22/...
+  maxcdcl/MaxCDCL/bin/maxcdcl_static
   evalmaxsat/EvalMaxSAT/bin/EvalMaxSAT
-  open-wbo/open-wbo                  # from --bench (compiled)
+  open-wbo/open-wbo                  # compiled
 ```
 
 Override root: `export QEECC_SAT_MAXSAT_DIR=/path/to/maxsat`

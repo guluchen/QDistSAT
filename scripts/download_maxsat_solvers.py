@@ -3,7 +3,7 @@
 Download / build MaxSAT binaries into bin/maxsat/<id>/ (see bin/maxsat/manifest.json).
 
 Examples:
-  python3 scripts/download_maxsat_solvers.py --bench   # maxcdcl, evalmaxsat, open-wbo
+  python3 scripts/download_maxsat_solvers.py --bench   # all MSE zips + open-wbo
   python3 scripts/download_maxsat_solvers.py --list    # check what is installed
   python3 scripts/download_maxsat_solvers.py             # all MSE zip solvers
 """
@@ -32,9 +32,14 @@ from qecc_sat.maxsat_registry import (  # noqa: E402
     maxsat_root,
 )
 
-# README / run_benchmark_stems_dir.sh defaults.
-BENCH_ZIP_IDS = ("maxcdcl", "evalmaxsat")
+# README / run_benchmark_stems_dir.sh: all MSE prebuilt zips + open-wbo build.
 BENCH_BUILD_IDS = ("open-wbo",)
+
+
+def _bench_zip_ids() -> tuple[str, ...]:
+    return tuple(
+        s.id for s in load_manifest() if s.zip_url and s.linux_elf
+    )
 
 
 def _download_zip(spec: MaxSATBinarySpec, install_dir: Path) -> None:
@@ -233,8 +238,8 @@ def main() -> None:
         "--bench",
         action="store_true",
         help=(
-            "Install benchmark defaults: "
-            f"{', '.join(BENCH_ZIP_IDS)} (zip) + {', '.join(BENCH_BUILD_IDS)} (build); skip if OK"
+            "Install benchmark defaults: all MSE zip solvers + "
+            f"{', '.join(BENCH_BUILD_IDS)} (build); skip if OK"
         ),
     )
     parser.add_argument("--only", nargs="*", metavar="ID", help="Manifest ids (zip download)")
@@ -261,7 +266,7 @@ def main() -> None:
     to_zip: list[str] | None = args.only
     to_build = list(args.build or [])
     if args.bench:
-        to_zip = list(BENCH_ZIP_IDS)
+        to_zip = list(_bench_zip_ids())
         for bid in BENCH_BUILD_IDS:
             if bid not in to_build:
                 to_build.append(bid)

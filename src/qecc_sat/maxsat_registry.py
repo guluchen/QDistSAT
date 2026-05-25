@@ -135,9 +135,7 @@ def not_installed_status(spec: MaxSATBinarySpec) -> str:
     if spec.id == "open-wbo":
         return "not installed (run: python3 scripts/download_maxsat_solvers.py --bench)"
     if spec.zip_url and spec.linux_elf:
-        if spec.id in ("maxcdcl", "evalmaxsat"):
-            return "not installed (run: python3 scripts/download_maxsat_solvers.py --bench)"
-        return "not installed (run: python3 scripts/download_maxsat_solvers.py)"
+        return "not installed (run: python3 scripts/download_maxsat_solvers.py --bench)"
     if spec.zip_url is None and spec.git_url is None:
         return f"not installed (place binary at {spec.executable_path()})"
     return f"not installed (run: python3 scripts/download_maxsat_solvers.py --only {spec.id})"

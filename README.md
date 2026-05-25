@@ -61,7 +61,7 @@ On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Do
 
 Only needed if you pass external names to `--solvers` (e.g. `maxcdcl`, `evalmaxsat`). **PySAT backends** (`rc2-glucose42`, `rc2-g3`, …) work after `pip install` alone.
 
-**Linux x86_64** — `--bench` downloads MSE zips and builds Open-WBO. If GMP is missing, the script tries `sudo apt install -y libgmp-dev` (Debian/Ubuntu) automatically:
+**Linux x86_64** — `--bench` downloads all MSE zip solvers (`cashw-coreplus`, `maxcdcl`, …) and builds Open-WBO. If GMP is missing, the script tries `sudo apt install -y libgmp-dev` (Debian/Ubuntu) automatically:
 
 ```bash
 python3 scripts/download_maxsat_solvers.py --bench
@@ -72,8 +72,8 @@ Use `--no-install-deps` to skip auto apt/brew. On macOS, `--bench` may run `brew
 
 | You want | Command |
 |----------|---------|
-| Default benchmark binaries (`maxcdcl`, `evalmaxsat`, `open-wbo`) | `--bench` |
-| All MSE zip solvers | `python3 scripts/download_maxsat_solvers.py` (no flags) |
+| All external binaries (MSE zips + `open-wbo`) | `--bench` |
+| MSE zips only (no Open-WBO build) | `python3 scripts/download_maxsat_solvers.py` (no flags) |
 | One solver | `--only maxcdcl` |
 | Build only Open-WBO | `--build open-wbo` |
 
