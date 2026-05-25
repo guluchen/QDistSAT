@@ -14,6 +14,7 @@ Usage:
   # Default: 180s (3 min) wall-clock timeout per configuration
   python benchmarks/benchmark_solver_performance.py --quick   # SC_9_1_3, d=3
   python benchmarks/benchmark_solver_performance.py --stem SC_9_1_3 -d 3 --solvers rc2-g3 maxcdcl distqldpc
+  python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6 --solvers codedistance  # optional pip [comparison]
   python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6
   python benchmarks/benchmark_solver_performance.py --stem BB_144_12_12 -d 12
   python benchmarks/benchmark_solver_performance.py --stems BB_72_12_6 BB_90_8_10
@@ -42,6 +43,20 @@ from pysat.card import EncType
 from qecc_sat import DEFAULT_MATRIX_DIR
 from qecc_sat.literature_distances import LITERATURE_BB_DISTANCES
 from qecc_sat.io import build_s_from_hx_hz, load_matrix, resolve_precomputed_logical_basis
+from qecc_sat.codedistance_runner import (
+    CODEDISTANCE_BENCH_CONFIGS,
+    CODEDISTANCE_SOLVER,
+    codedistance_available,
+    codedistance_install_hint,
+    codedistance_missing_status,
+    codedistance_prerequisite,
+    codedistance_solver_id,
+    explain_codedistance_failure,
+    expand_codedistance_solver_requests,
+    is_codedistance_solver,
+    resolve_codedistance_config_id,
+    run_codedistance,
+)
 from qecc_sat.distqldpc_runner import (
     DISTQLDPC_BENCH_CONFIGS,
     DISTQLDPC_SOLVER,
@@ -127,6 +142,7 @@ _SOLVER_GROUPS: tuple[tuple[str, tuple[SolverType, ...]], ...] = (
 )
 # Not a SolverType; use ``--solvers distqldpc`` (needs ``--bench`` install).
 _DISTQLDPC_GROUP_TITLE = "Reference (DistQLDPC binary)"
+_CODEDISTANCE_GROUP_TITLE = "Reference (codeDistancePYPI; optional pip)"
 # In SolverType but omitted from default benchmark runs.
 _EXTRA_SOLVER_NAMES = (SolverType.MINISAT_GH.value,)
 
@@ -138,6 +154,8 @@ def _format_solver_names_help() -> str:
         names = ", ".join(s.value for s in members)
         parts.append(f"{title}: {names}")
     parts.append(f"{_DISTQLDPC_GROUP_TITLE}: {DISTQLDPC_SOLVER}")
+    cd_names = ", ".join(codedistance_solver_id(cid) for cid, _, _ in CODEDISTANCE_BENCH_CONFIGS)
+    parts.append(f"{_CODEDISTANCE_GROUP_TITLE}: {CODEDISTANCE_SOLVER} or {cd_names}")
     parts.append(
         f"Also defined but not in default benchmark: {', '.join(_EXTRA_SOLVER_NAMES)}"
     )
@@ -171,10 +189,20 @@ def _print_solver_names(*, runnable_external: bool) -> None:
     )
     cfg = ", ".join(c for c, _ in DISTQLDPC_BENCH_CONFIGS)
     print(f"  {DISTQLDPC_SOLVER}{dq_note}  (configs: {cfg})", flush=True)
+    cd_note = (
+        "  [installed]"
+        if codedistance_available()
+        else "  [not installed — pip install -e \".[comparison]\"]"
+    )
+    print(f"\n{_CODEDISTANCE_GROUP_TITLE}:", flush=True)
+    for cid, method, _extra in CODEDISTANCE_BENCH_CONFIGS:
+        print(f"  {codedistance_solver_id(cid)}{cd_note}  ({method}, Z-distance)", flush=True)
+    print(f"  {CODEDISTANCE_SOLVER}  (runs all four cd-* above)", flush=True)
     print(f"\nNot in default benchmark: {', '.join(_EXTRA_SOLVER_NAMES)}", flush=True)
     print(
         "\nMaxSAT solvers use one optimization pass (encoding shown as maxsat). "
-        f"{DISTQLDPC_SOLVER} runs -no-card and -card-mto per stem (Strategy column); "
+        f"{DISTQLDPC_SOLVER} runs -no-card and -card-mto per stem; "
+        f"codeDistance backends use cd-* / {CODEDISTANCE_SOLVER} (Z-distance via CSScodeDistance); "
         "parses c d_lb / c d_ub from stdout. Others use each --encodings value.",
         flush=True,
     )
@@ -345,6 +373,24 @@ class _BenchmarkJob:
     display_encoding: str
 
 
+def _codedistance_job(config_id: str) -> _BenchmarkJob:
+    method, _extra = next(
+        (m, e) for cid, m, e in CODEDISTANCE_BENCH_CONFIGS if cid == config_id
+    )
+    return _BenchmarkJob(
+        codedistance_solver_id(config_id),
+        config_id,
+        config_id,
+        method,
+    )
+
+
+def _is_serial_benchmark_job(job: _BenchmarkJob) -> bool:
+    return job.solver_name == DISTQLDPC_SOLVER or is_codedistance_solver(
+        job.solver_name
+    )
+
+
 def _collect_benchmark_jobs(
     solvers_to_test: Iterable[str],
     encodings_to_test: List[str],
@@ -361,6 +407,10 @@ def _collect_benchmark_jobs(
                         config_id,
                     )
                 )
+            continue
+        cid = resolve_codedistance_config_id(sname)
+        if cid is not None:
+            jobs.append(_codedistance_job(cid))
             continue
         try:
             st = SolverType(sname.lower())
@@ -494,6 +544,72 @@ def _run_distqldpc_job(
     return result
 
 
+def _run_codedistance_job(
+    hx: list[list[int]],
+    hz: list[list[int]],
+    timeout_sec: Optional[float],
+    config_id: str,
+) -> dict:
+    method, extra = next(
+        (m, e) for cid, m, e in CODEDISTANCE_BENCH_CONFIGS if cid == config_id
+    )
+    sid = codedistance_solver_id(config_id)
+    result: dict = {
+        "solver": sid,
+        "cardinality": config_id,
+        "encoding": method,
+        "ok": False,
+        "time_sec": None,
+        "result": None,
+        "vars": None,
+        "clauses": None,
+        "clauses_approx": False,
+        "error": None,
+        "d_lb": None,
+        "d_ub": None,
+    }
+    if not codedistance_available():
+        result["error"] = codedistance_missing_status()
+        print(f"# {codedistance_install_hint()}", file=sys.stderr, flush=True)
+        return result
+    pre = codedistance_prerequisite(config_id)
+    if pre is not None:
+        result["error"] = pre[0]
+        print(f"# {pre[1]}", file=sys.stderr, flush=True)
+        return result
+    try:
+        cd = run_codedistance(
+            hx,
+            hz,
+            method=method,
+            extra_params=extra,
+            timeout_sec=timeout_sec,
+            component="Z",
+        )
+        result["time_sec"] = round(cd.elapsed_sec, 3)
+        formatted = cd.format_result()
+        if formatted is not None:
+            result["result"] = formatted
+        if cd.ok:
+            result["ok"] = True
+        elif cd.error:
+            status, detail = explain_codedistance_failure(config_id, cd.error)
+            result["error"] = status[:60]
+            print(f"# {detail}", file=sys.stderr, flush=True)
+        elif timeout_sec and cd.elapsed_sec >= float(timeout_sec) * 0.95:
+            result["error"] = "timeout"
+        else:
+            result["error"] = "no distance"
+    except ImportError:
+        result["error"] = codedistance_missing_status()
+        print(f"# {codedistance_install_hint()}", file=sys.stderr, flush=True)
+    except Exception as e:
+        status, detail = explain_codedistance_failure(config_id, str(e))
+        result["error"] = status[:60]
+        print(f"# {detail}", file=sys.stderr, flush=True)
+    return result
+
+
 def _execute_benchmark_job(
     s: list[list[int]],
     hx: Optional[list[list[int]]],
@@ -516,6 +632,13 @@ def _execute_benchmark_job(
     if job.solver_name == DISTQLDPC_SOLVER:
         r = _run_distqldpc_job(stem, matrix_dir, timeout_sec, job.encoding_key)
         return r
+    if is_codedistance_solver(job.solver_name):
+        cid = resolve_codedistance_config_id(job.solver_name)
+        if cid is None:
+            raise ValueError(f"Unknown codeDistance config for {job.solver_name!r}")
+        if hx is None or hz is None:
+            raise ValueError("codeDistance jobs require Hx and Hz matrices")
+        return _run_codedistance_job(hx, hz, timeout_sec, cid)
     st = SolverType(job.solver_name)
     enc = ENC_MAP.get(job.encoding_key)
     r = run_one(
@@ -1116,9 +1239,9 @@ def _run_jobs_fixed_timeout(
             if print_rows:
                 _print_result_row(r)
     else:
-        distq_jobs = [j for j in jobs if j.solver_name == DISTQLDPC_SOLVER]
-        pool_jobs = [j for j in jobs if j.solver_name != DISTQLDPC_SOLVER]
-        for job in distq_jobs:
+        serial_jobs = [j for j in jobs if _is_serial_benchmark_job(j)]
+        pool_jobs = [j for j in jobs if not _is_serial_benchmark_job(j)]
+        for job in serial_jobs:
             r = _execute_benchmark_job(
                 s,
                 hx,
@@ -1399,10 +1522,21 @@ def main() -> None:
             else DEFAULT_BENCHMARK_TIMEOUT_SEC
         )
 
-    solvers_to_test = args.solvers or _default_benchmark_solvers()
+    solvers_to_test = expand_codedistance_solver_requests(
+        list(args.solvers or _default_benchmark_solvers())
+    )
     if DISTQLDPC_SOLVER in solvers_to_test and not distqldpc_available():
         print(f"# Warning: {DISTQLDPC_SOLVER} listed but binary missing.", flush=True)
         print(f"# {distqldpc_install_hint()}", file=sys.stderr, flush=True)
+    if (
+        any(is_codedistance_solver(s) for s in solvers_to_test)
+        and not codedistance_available(import_check=True)
+    ):
+        print(
+            "# Warning: codeDistance comparison solver(s) listed but package missing.",
+            flush=True,
+        )
+        print(f"# {codedistance_install_hint()}", file=sys.stderr, flush=True)
     encodings_to_test = list(
         dict.fromkeys(args.encodings or DEFAULT_ENCODINGS)
     )

@@ -89,6 +89,29 @@ Fine-grained installs:
 | MaxSAT + DistQLDPC only | `python3 scripts/download_maxsat_solvers.py --bench` |
 | One MaxSAT solver | `python3 scripts/download_maxsat_solvers.py --only maxcdcl` |
 | DistQLDPC only | `python3 scripts/install_distqldpc.py` |
+| codeDistance comparison | `pip install -e ".[comparison]"` or `python3 scripts/install_benchmark_deps.py --with-comparison` |
+| dist-m4ri (cd-m4ri-cc) | `python3 scripts/install_dist_m4ri.py` |
+
+### codeDistance comparison (optional)
+
+For benchmarking against [codeDistancePYPI](https://github.com/m-webster/codeDistancePYPI) methods **GurobiDist**, **MIPDist** (SCIP), **dist_m4ri_CC**, and **magmaMinWord** (Z-distance via `CSScodeDistance`):
+
+```bash
+pip install -e ".[comparison]"
+# or: python3 scripts/install_benchmark_deps.py --with-comparison
+python3 benchmarks/benchmark_solver_performance.py --list-solvers   # cd-* entries
+
+python3 benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6 \
+  --solvers rc2-glucose42 codedistance
+# or pick one: --solvers cd-gurobi cd-mip-scip cd-m4ri-cc cd-magma
+```
+
+The pip extra installs `codedistance` and `ortools` (MIPDist/SCIP). **GurobiDist** still needs a Gurobi license; **dist_m4ri_CC** is not a pip package — build the [dist-m4ri](https://github.com/QEC-pages/dist-m4ri/) binary with `python3 scripts/install_dist_m4ri.py` (needs `libm4ri-dev` / `brew install m4ri`); **magmaMinWord** needs Magma on `PATH`. These backends are not in the default `--solvers` list.
+
+```bash
+python3 scripts/install_dist_m4ri.py          # → bin/dist_m4ri
+python3 scripts/install_dist_m4ri.py --status
+```
 
 Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 

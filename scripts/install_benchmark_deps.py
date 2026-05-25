@@ -6,6 +6,7 @@ Installs:
   - Python extras: z3-solver, cvc5 (SMT backends z3py / cvc5)
   - External MaxSAT zips + Open-WBO (``download_maxsat_solvers.py --bench``)
   - DistQLDPC reference binary (``bin/distqldpc``)
+  - Optional: codeDistancePYPI (``--with-comparison`` → ``pip install -e ".[comparison]"``)
 
 PySAT SAT/RC2 solvers need only ``pip install -e ".[dev]"`` (no download).
 
@@ -23,6 +24,15 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _codedistance_available() -> bool:
+    try:
+        from qecc_sat.codedistance_runner import codedistance_available
+
+        return codedistance_available()
+    except ImportError:
+        return False
 
 
 def _z3_available() -> bool:
@@ -47,11 +57,13 @@ def _print_pip_solver_status() -> None:
     for name, ok, pkg in (
         ("z3py", _z3_available(), "z3-solver"),
         ("cvc5", _cvc5_available(), "cvc5"),
+        ("codedistance", _codedistance_available(), "codedistance (comparison extra)"),
     ):
         mark = "OK" if ok else "missing"
         print(f"{name:<22} {mark:<10} pip package {pkg}")
         if not ok:
-            print(f"  ! pip install {pkg}")
+            hint = "pip install -e \".[comparison]\"" if name == "codedistance" else f"pip install {pkg}"
+            print(f"  ! {hint}")
 
 
 def _pip_install_one(spec: str) -> bool:
@@ -70,11 +82,17 @@ def _pip_install_one(spec: str) -> bool:
     return False
 
 
-def _run_pip_benchmark_extras(*, dev: bool) -> None:
+def _run_pip_benchmark_extras(*, dev: bool, comparison: bool) -> None:
     if dev:
         print("# pip install -e .[dev]", flush=True)
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "-e", ".[dev]"],
+            cwd=REPO_ROOT,
+        )
+    if comparison:
+        print("# pip install -e .[comparison]", flush=True)
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-e", ".[comparison]"],
             cwd=REPO_ROOT,
         )
     for _name, spec in (("cvc5", "cvc5>=1.2"), ("z3-solver", "z3-solver>=4.12")):
@@ -123,6 +141,11 @@ def main() -> None:
         help="Also install pytest via pip install -e '.[dev,benchmark]'",
     )
     parser.add_argument(
+        "--with-comparison",
+        action="store_true",
+        help="Install codeDistancePYPI via pip install -e '.[comparison]' and build dist-m4ri (cd-m4ri-cc)",
+    )
+    parser.add_argument(
         "--skip-maxsat",
         action="store_true",
         help="Skip download_maxsat_solvers.py --bench",
@@ -155,7 +178,23 @@ def main() -> None:
         return
 
     if not args.skip_pip:
-        _run_pip_benchmark_extras(dev=args.with_dev)
+        _run_pip_benchmark_extras(dev=args.with_dev, comparison=args.with_comparison)
+        print(flush=True)
+
+    if args.with_comparison:
+        cmd = [sys.executable, str(REPO_ROOT / "scripts" / "install_dist_m4ri.py")]
+        if args.no_install_system_deps:
+            cmd.append("--no-install-deps")
+        if args.force:
+            cmd.append("--force")
+        print(f"# {' '.join(cmd)}", flush=True)
+        try:
+            subprocess.check_call(cmd, cwd=REPO_ROOT)
+        except subprocess.CalledProcessError:
+            print(
+                "# Warning: dist-m4ri install failed (cd-m4ri-cc will stay unavailable)",
+                flush=True,
+            )
         print(flush=True)
 
     if not args.skip_maxsat:
