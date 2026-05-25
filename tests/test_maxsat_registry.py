@@ -6,11 +6,14 @@ import pytest
 
 from qecc_sat.maxsat_external import parse_cominisatps_optimal, parse_o_v_lines
 from qecc_sat.maxsat_registry import (
+    MaxSATNotInstalledError,
+    _which_usable,
     get_spec,
     host_supports_linux_elf,
     list_status,
     load_manifest,
     maxsat_runnable_on_host,
+    resolve_executable,
 )
 
 
@@ -58,6 +61,24 @@ def test_linux_elf_not_runnable_off_linux():
     if row["installed"]:
         assert row.get("skipped_host")
         assert row["error"] is None
+
+
+def test_unreadable_path_shadow_is_ignored(monkeypatch, tmp_path):
+    """PATH may contain root-owned stubs; do not treat them as installed."""
+    bad = tmp_path / "cashwmaxsatcoreplus"
+    bad.write_bytes(b"\x7fELF")
+    bad.chmod(0o000)
+    try:
+        monkeypatch.setattr("qecc_sat.maxsat_registry.shutil.which", lambda _n: str(bad))
+        assert _which_usable("cashwmaxsatcoreplus") is None
+        rows = list_status()
+        assert all(
+            not r["runnable"] or "cashw" not in r["id"]
+            for r in rows
+            if r["path"] == str(bad)
+        )
+    finally:
+        bad.chmod(0o644)
 
 
 def test_cashw_platform_on_darwin():

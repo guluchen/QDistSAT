@@ -115,15 +115,36 @@ def get_spec(solver_type: str, path: Optional[Path] = None) -> MaxSATBinarySpec:
         ) from None
 
 
+def _is_usable_executable(path: Path) -> bool:
+    """File exists and we can read/execute it (ignore unreadable PATH shadows)."""
+    try:
+        return path.is_file() and os.access(path, os.R_OK) and os.access(path, os.X_OK)
+    except OSError:
+        return False
+
+
+def _which_usable(name: str) -> Optional[Path]:
+    which = shutil.which(name)
+    if not which:
+        return None
+    path = Path(which)
+    return path if _is_usable_executable(path) else None
+
+
 def _read_magic(path: Path, n: int = 4) -> bytes:
-    with open(path, "rb") as f:
-        return f.read(n)
+    try:
+        with open(path, "rb") as f:
+            return f.read(n)
+    except (PermissionError, OSError):
+        return b""
 
 
 def platform_mismatch_message(exe: Path) -> Optional[str]:
     """Non-None if an MSE Linux ELF binary cannot run on this host."""
     if not exe.is_file():
         return None
+    if not _is_usable_executable(exe):
+        return f"binary not readable: {exe}"
     if not _read_magic(exe, 4).startswith(b"\x7fELF"):
         return None
     if host_supports_linux_elf():
@@ -159,16 +180,15 @@ def resolve_executable(
     """
     spec = get_spec(solver_type, path=path)
     exe = spec.executable_path(root)
-    if exe.is_file():
+    if _is_usable_executable(exe):
         if check_platform:
             assert_runnable(exe)
         return exe
-    which = shutil.which(exe.name)
-    if which:
-        p = Path(which)
+    shadow = _which_usable(exe.name)
+    if shadow is not None:
         if check_platform:
-            assert_runnable(p)
-        return p
+            assert_runnable(shadow)
+        return shadow
     raise MaxSATNotInstalledError(not_installed_status(spec))
 
 
@@ -182,7 +202,7 @@ def maxsat_runnable_on_host(solver_type: str, *, root: Optional[Path] = None) ->
     try:
         resolve_executable(solver_type, root=root, check_platform=True)
         return True
-    except (FileNotFoundError, MaxSATNotInstalledError, MaxSATPlatformError):
+    except (FileNotFoundError, MaxSATNotInstalledError, MaxSATPlatformError, PermissionError):
         return False
 
 
@@ -201,6 +221,8 @@ def external_maxsat_skip_reason(solver_type: str, *, root: Optional[Path] = None
         resolve_executable(solver_type, root=root, check_platform=True)
     except MaxSATPlatformError as e:
         return str(e)
+    except PermissionError as e:
+        return str(e).replace("\n", " ")[:120]
     except (FileNotFoundError, MaxSATNotInstalledError) as e:
         return str(e)
     return "not runnable (see --list-solvers)"
@@ -222,7 +244,7 @@ def list_status(root: Optional[Path] = None) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for spec in load_manifest():
         exe = spec.executable_path(root)
-        installed = exe.is_file() or bool(shutil.which(Path(exe).name))
+        installed = _is_usable_executable(exe) or _which_usable(exe.name) is not None
         skipped_host = spec.linux_elf and not host_supports_linux_elf()
         runnable = False
         err: Optional[str] = None
@@ -234,6 +256,8 @@ def list_status(root: Optional[Path] = None) -> List[Dict[str, Any]]:
                 runnable = True
             except MaxSATPlatformError:
                 pass
+            except PermissionError as e:
+                err = str(e).replace("\n", " ")[:120]
             except (FileNotFoundError, MaxSATNotInstalledError) as e:
                 err = str(e)
         else:
@@ -242,7 +266,7 @@ def list_status(root: Optional[Path] = None) -> List[Dict[str, Any]]:
         if installed and not skipped_host:
             try:
                 path = str(resolve_executable(spec.solver_type, root=root))
-            except (FileNotFoundError, MaxSATNotInstalledError):
+            except (FileNotFoundError, MaxSATNotInstalledError, PermissionError):
                 pass
         rows.append(
             {
