@@ -3,7 +3,7 @@
 Download / build MaxSAT binaries into bin/maxsat/<id>/ (see bin/maxsat/manifest.json).
 
 Examples:
-  python3 scripts/download_maxsat_solvers.py --bench   # all MSE zips + open-wbo
+  python3 scripts/download_maxsat_solvers.py --bench   # MSE zips + open-wbo + DistQLDPC
   python3 scripts/download_maxsat_solvers.py --list    # check what is installed
   python3 scripts/download_maxsat_solvers.py             # all MSE zip solvers
 """
@@ -20,7 +20,9 @@ from pathlib import Path
 from urllib.request import urlretrieve
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+_SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from qecc_sat.maxsat_registry import (  # noqa: E402
     MaxSATBinarySpec,
@@ -196,6 +198,12 @@ def _build_git(
     print(f"# OK: {install_exe}", flush=True)
 
 
+def _print_distqldpc_status() -> None:
+    from install_distqldpc import print_status as _print_dq  # noqa: WPS433
+
+    _print_dq()
+
+
 def _print_status(root: Path) -> None:
     for row in list_status(root):
         if row["runnable"]:
@@ -216,6 +224,8 @@ def _print_status(root: Path) -> None:
             "# MSE zip solvers (linux_elf) install on any host but run only on Linux x86_64.",
             flush=True,
         )
+    print("", flush=True)
+    _print_distqldpc_status()
 
 
 def _print_post_install_hints(root: Path) -> None:
@@ -229,8 +239,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Install external MaxSAT binaries under bin/maxsat/",
         epilog=(
-            "Quick path (Linux x86_64): python3 scripts/download_maxsat_solvers.py --bench\n"
-            "PySAT solvers (rc2-glucose42, …) need no download."
+            "Quick path: python3 scripts/download_maxsat_solvers.py --bench\n"
+            "(MSE zips, open-wbo, DistQLDPC). PySAT solvers need no download."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -239,8 +249,13 @@ def main() -> None:
         action="store_true",
         help=(
             "Install benchmark defaults: all MSE zip solvers + "
-            f"{', '.join(BENCH_BUILD_IDS)} (build); skip if OK"
+            f"{', '.join(BENCH_BUILD_IDS)} (build) + DistQLDPC; skip if OK"
         ),
+    )
+    parser.add_argument(
+        "--no-distqldpc",
+        action="store_true",
+        help="With --bench, do not clone/build DistQLDPC",
     )
     parser.add_argument("--only", nargs="*", metavar="ID", help="Manifest ids (zip download)")
     parser.add_argument("--build", nargs="*", metavar="ID", help="Build from git")
@@ -306,7 +321,15 @@ def main() -> None:
             shutil.rmtree(install_dir)
         _build_git(spec, install_dir, auto_install_deps=not args.no_install_deps)
 
-    if to_zip or to_build:
+    if args.bench and not args.no_distqldpc:
+        from install_distqldpc import install as install_distqldpc  # noqa: WPS433
+
+        install_distqldpc(
+            force=args.force,
+            auto_install_deps=not args.no_install_deps,
+        )
+
+    if to_zip or to_build or (args.bench and not args.no_distqldpc):
         _print_post_install_hints(root)
 
 

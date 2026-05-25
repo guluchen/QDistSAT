@@ -24,7 +24,7 @@ git clone git@github.com:guluchen/QDistSAT.git
 Minimal Python on Debian often lacks `venv` and blocks system-wide `pip` (PEP 668). Install once:
 
 ```bash
-sudo apt install -y python3-venv python3-pip git make libgmp-dev
+sudo apt install -y python3-venv python3-pip git make g++ zlib1g-dev libgmp-dev
 # if `python3 -m venv` still fails, match your version, e.g.:
 # sudo apt install -y python3.12-venv
 ```
@@ -42,8 +42,9 @@ source venv/bin/activate
 python3 -m pip install --upgrade pip
 python3 -m pip install -e ".[dev]"
 
-# optional: external MaxSAT on Linux x86_64 (see below)
+# optional: external MaxSAT + DistQLDPC reference tool (see below)
 python3 scripts/download_maxsat_solvers.py --bench
+# ./bin/distqldpc BB_108_8_10   # after --bench
 
 # logical bases (if Gx/Gz missing; requires pip install above)
 precompute-logicals BB_108_8_10
@@ -61,7 +62,7 @@ On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Do
 
 Only needed if you pass external names to `--solvers` (e.g. `maxcdcl`, `evalmaxsat`). **PySAT backends** (`rc2-glucose42`, `rc2-g3`, …) work after `pip install` alone.
 
-**Linux x86_64** — `--bench` downloads all MSE zip solvers (`cashw-coreplus`, `maxcdcl`, …) and builds Open-WBO. If GMP is missing, the script tries `sudo apt install -y libgmp-dev` (Debian/Ubuntu) automatically:
+**Linux x86_64** — `--bench` downloads all MSE zip solvers, builds [Open-WBO](bin/maxsat/README.md), and clones/builds [DistQLDPC](https://github.com/guluchen/DistQLDPC) into `vendor/DistQLDPC` (symlink `bin/distqldpc`). Missing apt packages (`libgmp-dev`, `g++`, `zlib1g-dev`) are installed automatically when possible:
 
 ```bash
 python3 scripts/download_maxsat_solvers.py --bench
@@ -72,10 +73,12 @@ Use `--no-install-deps` to skip auto apt/brew. On macOS, `--bench` may run `brew
 
 | You want | Command |
 |----------|---------|
-| All external binaries (MSE zips + `open-wbo`) | `--bench` |
-| MSE zips only (no Open-WBO build) | `python3 scripts/download_maxsat_solvers.py` (no flags) |
-| One solver | `--only maxcdcl` |
+| All external binaries (MSE zips + `open-wbo` + DistQLDPC) | `--bench` |
+| MSE zips only (no Open-WBO / DistQLDPC) | `python3 scripts/download_maxsat_solvers.py` (no flags) |
+| DistQLDPC only | `python3 scripts/install_distqldpc.py` |
+| One MaxSAT solver | `--only maxcdcl` |
 | Build only Open-WBO | `--build open-wbo` |
+| Skip DistQLDPC in `--bench` | `--bench --no-distqldpc` |
 
 Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 

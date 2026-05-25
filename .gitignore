@@ -108,3 +108,7 @@ data/stim/
 # Open-WBO local build (large; use scripts/download_maxsat_solvers.py --build open-wbo)
 bin/maxsat/open-wbo/
 
+# DistQLDPC (scripts/install_distqldpc.py or --bench)
+vendor/DistQLDPC/
+bin/distqldpc
+

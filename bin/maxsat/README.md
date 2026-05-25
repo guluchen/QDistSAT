@@ -4,7 +4,7 @@ External MaxSAT executables used by `qecc_sat` (optional; PySAT `rc2-*` solvers 
 
 ## Install (from repo root)
 
-**Recommended** — all MSE zips + `open-wbo` on Linux x86_64:
+**Recommended** — all MSE zips + `open-wbo` + [DistQLDPC](https://github.com/guluchen/DistQLDPC) on Linux x86_64:
 
 ```bash
 # Debian/Ubuntu: --bench auto-runs `sudo apt install -y libgmp-dev` if GMP is missing
@@ -14,8 +14,9 @@ python3 scripts/download_maxsat_solvers.py --list
 
 | Goal | Command |
 |------|---------|
-| All MSE zips + `open-wbo` | `--bench` |
-| MSE zips only (skip Open-WBO build) | no flags |
+| All MSE zips + `open-wbo` + DistQLDPC (`bin/distqldpc`) | `--bench` |
+| MSE zips only | no flags |
+| DistQLDPC only | `python3 scripts/install_distqldpc.py` |
 | Pick solvers | `--only maxcdcl evalmaxsat` |
 | Build only Open-WBO | `--build open-wbo` |
 
