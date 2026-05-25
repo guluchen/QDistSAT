@@ -48,6 +48,7 @@ from qecc_sat.codedistance_runner import (
     CODEDISTANCE_SOLVER,
     codedistance_available,
     codedistance_install_hint,
+    codedistance_pip_install_hint,
     codedistance_missing_status,
     codedistance_prerequisite,
     codedistance_solver_id,
@@ -570,7 +571,6 @@ def _run_codedistance_job(
     }
     if not codedistance_available():
         result["error"] = codedistance_missing_status()
-        print(f"# {codedistance_install_hint()}", file=sys.stderr, flush=True)
         return result
     pre = codedistance_prerequisite(config_id)
     if pre is not None:
@@ -602,7 +602,6 @@ def _run_codedistance_job(
             result["error"] = "no distance"
     except ImportError:
         result["error"] = codedistance_missing_status()
-        print(f"# {codedistance_install_hint()}", file=sys.stderr, flush=True)
     except Exception as e:
         status, detail = explain_codedistance_failure(config_id, str(e))
         result["error"] = status[:60]
@@ -1536,7 +1535,7 @@ def main() -> None:
             "# Warning: codeDistance comparison solver(s) listed but package missing.",
             flush=True,
         )
-        print(f"# {codedistance_install_hint()}", file=sys.stderr, flush=True)
+        print(f"# {codedistance_pip_install_hint()}", file=sys.stderr, flush=True)
     encodings_to_test = list(
         dict.fromkeys(args.encodings or DEFAULT_ENCODINGS)
     )

@@ -167,9 +167,16 @@ def _prepend_repo_bin_to_path() -> None:
             os.environ["PATH"] = bin_dir + (os.pathsep + path if path else "")
 
 
+def codedistance_pip_install_hint() -> str:
+    return (
+        'pip install -e ".[comparison]"  '
+        "(or: python3 scripts/install_benchmark_deps.py)"
+    )
+
+
 def codedistance_install_hint() -> str:
     return (
-        "codeDistance comparison backends need: pip install -e \".[comparison]\" "
+        f"codeDistance comparison backends need: {codedistance_pip_install_hint()} "
         "(codedistance + ortools for MIPDist/SCIP). "
         "GurobiDist needs a Gurobi license; "
         f"dist_m4ri_CC needs dist-m4ri ({dist_m4ri_install_hint()}); "

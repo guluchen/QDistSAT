@@ -232,6 +232,12 @@ def main() -> None:
 
     print("# SMT backends", flush=True)
     _print_pip_solver_status()
+    if install_comparison and not _codedistance_available():
+        print(
+            "# Warning: codedistance pip package still missing — run:",
+            flush=True,
+        )
+        print('  pip install -e ".[comparison]"', flush=True)
     print("\n# External binaries (full list)", flush=True)
     subprocess.check_call(
         [
