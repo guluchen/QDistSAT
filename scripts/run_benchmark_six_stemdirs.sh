@@ -24,7 +24,8 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DATA_ROOT="${REPO_ROOT}/data"
 LOG_DIR="${REPO_ROOT}/logs"
 TIMEOUT="${DEFAULT_TIMEOUT}"
-JOBS=1
+JOBS=""
+NO_AUTO_JOBS=0
 FOREGROUND=0
 DRY_RUN=0
 
@@ -38,7 +39,8 @@ Per-stem max distance follows literature / benchmark defaults (no -d override).
 
 Options:
   -t, --timeout SEC   Per-config wall-clock timeout (default: 60)
-  -j, --jobs N        Parallel workers inside each directory run (default: 1)
+  -j, --jobs N        Fixed workers per directory (default: --auto-jobs)
+  --no-auto-jobs      Sequential inside each directory (--jobs 1)
   --data-root DIR     Parent of BB, BB2, … (default: REPO/data)
   --log-dir DIR       Log output directory (default: REPO/logs)
   --foreground        Wait for all six runs to finish (default: detach)
@@ -67,6 +69,10 @@ while [[ $# -gt 0 ]]; do
     -j|--jobs)
       JOBS="$2"
       shift 2
+      ;;
+    --no-auto-jobs)
+      NO_AUTO_JOBS=1
+      shift
       ;;
     --data-root)
       DATA_ROOT="$2"
@@ -127,13 +133,20 @@ fi
 
 echo "# repo=${REPO_ROOT}" >&2
 echo "# python=${PYTHON}" >&2
-echo "# timeout=${TIMEOUT}s per config, jobs=${JOBS} per directory" >&2
+if [[ "${NO_AUTO_JOBS}" -eq 1 ]]; then
+  parallel_note="sequential per directory (--no-auto-jobs)"
+elif [[ -n "${JOBS}" ]]; then
+  parallel_note="--jobs ${JOBS} per directory"
+else
+  parallel_note="--auto-jobs per directory (~half idle CPUs)"
+fi
+echo "# timeout=${TIMEOUT}s per config, ${parallel_note}" >&2
 echo "# solvers=default (all tools)" >&2
 echo "# pid file: ${PID_FILE}" >&2
 
 {
   echo "# started $(date '+%Y-%m-%dT%H:%M:%S%z')"
-  echo "# timeout=${TIMEOUT} jobs=${JOBS}"
+  echo "# timeout=${TIMEOUT} parallel=${parallel_note}"
 } > "${PID_FILE}"
 
 pids=()
@@ -144,9 +157,12 @@ for name in "${STEM_DIRS[@]}"; do
     "${PYTHON}" benchmarks/benchmark_solver_performance.py
     --stems-dir "${stems_dir}"
     --timeout "${TIMEOUT}"
-    --no-auto-jobs
-    --jobs "${JOBS}"
   )
+  if [[ "${NO_AUTO_JOBS}" -eq 1 ]]; then
+    cmd+=(--no-auto-jobs --jobs 1)
+  elif [[ -n "${JOBS}" ]]; then
+    cmd+=(--jobs "${JOBS}")
+  fi
 
   if [[ "${DRY_RUN}" -eq 1 ]]; then
     echo "[dry-run] ${name} -> ${log_path}"
