@@ -77,11 +77,60 @@ def _brew_gmp_flags() -> tuple[str, str]:
 
 
 def _have_system_gmpxx() -> bool:
-    """True if gmpxx.h is at a standard system include path (Linux apt/yum install)."""
-    for p in ("/usr/include/gmpxx.h", "/usr/local/include/gmpxx.h"):
-        if Path(p).is_file():
-            return True
-    return False
+    """True if gmpxx.h is at a standard system or Homebrew include path."""
+    candidates = ["/usr/include/gmpxx.h", "/usr/local/include/gmpxx.h"]
+    inc, _ = _brew_gmp_flags()
+    if inc.startswith("-I"):
+        candidates.append(f"{inc[2:]}/gmpxx.h")
+    return any(Path(p).is_file() for p in candidates)
+
+
+def _gmp_install_hint() -> str:
+    if sys.platform == "darwin":
+        pkg = "brew install gmp"
+    elif Path("/etc/debian_version").is_file():
+        pkg = "sudo apt install -y libgmp-dev"
+    elif Path("/etc/fedora-release").is_file() or Path("/etc/redhat-release").is_file():
+        pkg = "sudo dnf install -y gmp-devel"
+    else:
+        pkg = "install GMP development headers (package name: libgmp-dev or gmp-devel)"
+    return (
+        "Open-WBO (--bench) needs GMP (gmpxx.h).\n\n"
+        f"  {pkg}\n\n"
+        "Then re-run: python3 scripts/download_maxsat_solvers.py --bench"
+    )
+
+
+def _try_install_gmp() -> bool:
+    """Install GMP via apt/brew when possible. Return True if headers are available after."""
+    if _have_system_gmpxx() or _brew_gmp_flags()[0]:
+        return True
+    print("# GMP (gmpxx.h) not found; installing build dependency…", flush=True)
+    try:
+        if Path("/etc/debian_version").is_file() and shutil.which("apt-get"):
+            subprocess.check_call(
+                ["sudo", "apt-get", "install", "-y", "libgmp-dev"],
+            )
+        elif (
+            Path("/etc/fedora-release").is_file() or Path("/etc/redhat-release").is_file()
+        ) and shutil.which("dnf"):
+            subprocess.check_call(["sudo", "dnf", "install", "-y", "gmp-devel"])
+        elif sys.platform == "darwin" and shutil.which("brew"):
+            subprocess.check_call(["brew", "install", "gmp"])
+        else:
+            return False
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        print(f"# Auto-install failed: {exc}", flush=True)
+        return False
+    return bool(_have_system_gmpxx() or _brew_gmp_flags()[0])
+
+
+def _require_gmp(*, auto_install: bool = True) -> None:
+    if _have_system_gmpxx() or _brew_gmp_flags()[0]:
+        return
+    if auto_install and _try_install_gmp():
+        return
+    raise SystemExit(_gmp_install_hint())
 
 
 def _open_wbo_build_env(src: Path) -> dict[str, str]:
@@ -89,19 +138,23 @@ def _open_wbo_build_env(src: Path) -> dict[str, str]:
     env["PWD"] = str(src.resolve())
     inc, lib = _brew_gmp_flags()
     if not inc and not _have_system_gmpxx():
-        raise SystemExit(
-            "Open-WBO requires GMP (gmpxx.h). On macOS: brew install gmp\n"
-            "On Debian/Ubuntu: sudo apt install libgmp-dev"
-        )
+        raise SystemExit(_gmp_install_hint())
     if inc:
         for key in ("CFLAGS", "CXXFLAGS", "LDFLAGS", "LFLAGS"):
             env[key] = " ".join(x for x in (env.get(key, ""), inc, lib) if x).strip()
     return env
 
 
-def _build_git(spec: MaxSATBinarySpec, install_dir: Path) -> None:
+def _build_git(
+    spec: MaxSATBinarySpec,
+    install_dir: Path,
+    *,
+    auto_install_deps: bool = True,
+) -> None:
     if not spec.git_url:
         raise SystemExit(f"Solver {spec.id!r} has no git_url.")
+    if spec.id == "open-wbo":
+        _require_gmp(auto_install=auto_install_deps)
     install_dir.mkdir(parents=True, exist_ok=True)
     src = install_dir / "src"
     if src.is_dir():
@@ -188,6 +241,11 @@ def main() -> None:
     parser.add_argument("--build", nargs="*", metavar="ID", help="Build from git")
     parser.add_argument("--list", action="store_true", help="Show install status")
     parser.add_argument("--force", action="store_true", help="Remove install dir first")
+    parser.add_argument(
+        "--no-install-deps",
+        action="store_true",
+        help="Do not run apt/brew to install GMP before building open-wbo",
+    )
     parser.add_argument("--dest", type=Path, default=None, help="Override maxsat root")
     args = parser.parse_args()
     root = maxsat_root(args.dest)
@@ -241,7 +299,7 @@ def main() -> None:
         install_dir = root / spec.id
         if install_dir.exists() and args.force:
             shutil.rmtree(install_dir)
-        _build_git(spec, install_dir)
+        _build_git(spec, install_dir, auto_install_deps=not args.no_install_deps)
 
     if to_zip or to_build:
         _print_post_install_hints(root)

@@ -7,7 +7,7 @@ External MaxSAT executables used by `qecc_sat` (optional; PySAT `rc2-*` solvers 
 **Recommended** — README benchmark defaults on Linux x86_64 (`maxcdcl`, `evalmaxsat`, `open-wbo`):
 
 ```bash
-# Debian/Ubuntu: sudo apt install -y git make libgmp-dev
+# Debian/Ubuntu: --bench auto-runs `sudo apt install -y libgmp-dev` if GMP is missing
 python3 scripts/download_maxsat_solvers.py --bench
 python3 scripts/download_maxsat_solvers.py --list
 ```
