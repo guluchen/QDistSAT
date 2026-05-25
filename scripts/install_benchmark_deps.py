@@ -21,11 +21,44 @@ Examples:
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _using_virtualenv() -> bool:
+    if os.environ.get("VIRTUAL_ENV"):
+        return True
+    return sys.prefix != sys.base_prefix
+
+
+def _externally_managed_system_python() -> bool:
+    """True when Debian/Ubuntu PEP 668 blocks ``pip install`` on system python3."""
+    if _using_virtualenv():
+        return False
+    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+    markers = (
+        Path(sys.base_prefix) / "lib" / f"python{py_ver}" / "EXTERNALLY-MANAGED",
+        Path(f"/usr/lib/python{py_ver}/EXTERNALLY-MANAGED"),
+    )
+    return any(p.is_file() for p in markers)
+
+
+def _require_venv_for_pip() -> None:
+    if not _externally_managed_system_python():
+        return
+    raise SystemExit(
+        "Refusing pip install with system Python (PEP 668 externally-managed-environment).\n\n"
+        f"  Current interpreter: {sys.executable}\n\n"
+        "  cd QDistSAT\n"
+        "  python3 -m venv venv\n"
+        "  source venv/bin/activate\n"
+        "  python3 -m pip install -e \".[dev]\"\n"
+        "  python3 scripts/install_benchmark_deps.py\n"
+    )
 
 
 def _codedistance_available() -> bool:
@@ -85,20 +118,18 @@ def _pip_install_one(spec: str) -> bool:
 
 
 def _run_pip_benchmark_extras(*, dev: bool, comparison: bool) -> None:
-    if dev:
-        print("# pip install -e .[dev]", flush=True)
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "-e", ".[dev]"],
-            cwd=REPO_ROOT,
-        )
+    """One editable install for qdistsat + SMT extras (+ comparison when requested)."""
+    extras: list[str] = ["benchmark"]
     if comparison:
-        print("# pip install -e .[comparison]", flush=True)
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "-e", ".[comparison]"],
-            cwd=REPO_ROOT,
-        )
-    for _name, spec in (("cvc5", "cvc5>=1.2"), ("z3-solver", "z3-solver>=4.12")):
-        _pip_install_one(spec)
+        extras.append("comparison")
+    if dev:
+        extras.append("dev")
+    spec = f".[{','.join(extras)}]"
+    print(f"# pip install -e {spec!r}  (python: {sys.executable})", flush=True)
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "-e", spec],
+        cwd=REPO_ROOT,
+    )
 
 
 def _run_dist_m4ri(*, no_install_deps: bool, force: bool) -> None:
@@ -203,6 +234,7 @@ def main() -> None:
         return
 
     if not args.skip_pip:
+        _require_venv_for_pip()
         _run_pip_benchmark_extras(dev=args.with_dev, comparison=install_comparison)
         print(flush=True)
 

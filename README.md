@@ -38,11 +38,11 @@ cd QDistSAT
 # rm -rf venv
 
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate   # required on Debian/Ubuntu (PEP 668 blocks system pip)
 python3 -m pip install --upgrade pip
 python3 -m pip install -e ".[dev]"
 
-# full benchmark stack: SMT (z3, cvc5) + MaxSAT + DistQLDPC + codeDistance + dist-m4ri
+# full benchmark stack (must run inside venv — uses venv/bin/python3, not /usr/bin/python3)
 python3 scripts/install_benchmark_deps.py
 python3 scripts/install_benchmark_deps.py --list   # distqldpc, maxcdcl, codedistance, dist_m4ri
 # ./bin/distqldpc data/matrices/BB_108_8_10   # smoke test
@@ -105,7 +105,14 @@ python3 benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6 \
   --solvers rc2-glucose42 maxcdcl distqldpc codedistance
 ```
 
-**GurobiDist** needs a Gurobi license; **magmaMinWord** needs Magma on `PATH`. Details: [bin/maxsat/README.md](bin/maxsat/README.md).
+**GurobiDist** needs a Gurobi license; **magmaMinWord** needs the `magma` binary on `PATH`, or:
+
+```bash
+export MAGMA_HOME=/home/yfc/distanceLibTest   # directory containing magma executable
+# or: export QEECC_SAT_MAGMA=/full/path/to/magma
+```
+
+Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 
 ## Input data
 
