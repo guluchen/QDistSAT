@@ -93,6 +93,7 @@ scripts/*
 !scripts/install_dist_m4ri.py
 !scripts/parse_benchmark_log_to_latex.py
 !scripts/run_benchmark_stems_dir.sh
+!scripts/run_benchmark_six_stemdirs.sh
 
 # Library modules off the benchmark / precompute-logicals path
 src/qecc_sat/bb_code_capacity.py

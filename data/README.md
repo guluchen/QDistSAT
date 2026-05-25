@@ -29,3 +29,14 @@ precompute-logicals BB_108_8_10
 ```
 
 Default directory: `data/matrices` (`--benchmark-dir` to override).
+
+## Six experiment batches (`BB`, `BB2`, `QT`, `QT2`, `LP`, `LP2`)
+
+Matrices for batch runs live under `data/BB`, `data/BB2`, … (each folder is a `--stems-dir`).
+
+Run all six in parallel (default 60s per config, all default solvers, one log per folder):
+
+```bash
+./scripts/run_benchmark_six_stemdirs.sh
+./scripts/run_benchmark_six_stemdirs.sh --timeout 120 --foreground
+```
