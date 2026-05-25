@@ -198,10 +198,42 @@ def _build_git(
     print(f"# OK: {install_exe}", flush=True)
 
 
-def _print_distqldpc_status() -> None:
-    from install_distqldpc import print_status as _print_dq  # noqa: WPS433
+_DISTQLDPC_INSTALL_SCRIPT = _SCRIPTS_DIR / "install_distqldpc.py"
 
-    _print_dq()
+
+def _distqldpc_install_script_missing() -> bool:
+    return not _DISTQLDPC_INSTALL_SCRIPT.is_file()
+
+
+def _distqldpc_missing_message() -> str:
+    return (
+        "scripts/install_distqldpc.py is missing (git pull the latest QDistSAT). "
+        "Then run: python3 scripts/install_distqldpc.py"
+    )
+
+
+def _run_distqldpc_install(*, force: bool, auto_install_deps: bool) -> None:
+    if _distqldpc_install_script_missing():
+        raise SystemExit(f"# DistQLDPC: {_distqldpc_missing_message()}")
+    cmd = [sys.executable, str(_DISTQLDPC_INSTALL_SCRIPT)]
+    if force:
+        cmd.append("--force")
+    if not auto_install_deps:
+        cmd.append("--no-install-deps")
+    print(f"# {' '.join(cmd)}", flush=True)
+    subprocess.check_call(cmd, cwd=REPO_ROOT)
+
+
+def _print_distqldpc_status() -> None:
+    if _distqldpc_install_script_missing():
+        print("distqldpc              missing", flush=True)
+        print("  DistQLDPC reference distance tool", flush=True)
+        print(f"  ! {_distqldpc_missing_message()}", flush=True)
+        return
+    subprocess.check_call(
+        [sys.executable, str(_DISTQLDPC_INSTALL_SCRIPT), "--status"],
+        cwd=REPO_ROOT,
+    )
 
 
 def _print_status(root: Path) -> None:
@@ -322,9 +354,7 @@ def main() -> None:
         _build_git(spec, install_dir, auto_install_deps=not args.no_install_deps)
 
     if args.bench and not args.no_distqldpc:
-        from install_distqldpc import install as install_distqldpc  # noqa: WPS433
-
-        install_distqldpc(
+        _run_distqldpc_install(
             force=args.force,
             auto_install_deps=not args.no_install_deps,
         )

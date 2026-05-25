@@ -88,6 +88,8 @@ benchmarks/*
 
 scripts/*
 !scripts/download_maxsat_solvers.py
+!scripts/install_benchmark_deps.py
+!scripts/install_distqldpc.py
 !scripts/parse_benchmark_log_to_latex.py
 !scripts/run_benchmark_stems_dir.sh
 
