@@ -74,7 +74,6 @@ python3 scripts/download_maxsat_solvers.py --list   # optional: verify status (O
 | All MSE zip solvers | `python3 scripts/download_maxsat_solvers.py` (no flags) |
 | One solver | `--only maxcdcl` |
 | Open-WBO (compile) | `--build open-wbo` (needs `git`, `make`, `libgmp-dev`) |
-| `glucose_release` | Copy binary to `bin/maxsat/glucose_release` (no auto-download) |
 
 Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 

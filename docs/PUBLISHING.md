@@ -10,7 +10,6 @@ The following are **gitignored** and should stay local (or be regenerated):
 |------|--------|
 | `venv/`, `.venv/` | Recreate with `python -m venv venv && pip install -e ".[dev]"` |
 | `bin/maxsat/*` (except `manifest.json`, `README.md`) | Run `python3 scripts/download_maxsat_solvers.py --bench` on Linux x86_64 |
-| `bin/maxsat/glucose_release` | Optional macOS drop-in; not in MSE zips |
 | `logs/*.log` | Benchmark output |
 | `*.zip`, `*.prof` at repo root | Old exports / profiling |
 | Experimental scripts | Full list: [REPO_SCOPE.md](REPO_SCOPE.md) (`tools/`, extra `benchmarks/*.py`, `packages/`, `local/`, …) |

@@ -164,12 +164,6 @@ def _print_post_install_hints(root: Path) -> None:
     runnable = [r["id"] for r in list_status(root) if r["runnable"]]
     if runnable:
         print(f"# Runnable: {', '.join(runnable)}", flush=True)
-    if not maxsat_runnable_on_host("glucose_release", root=root):
-        print(
-            "# Optional: place a glucose_release binary at",
-            maxsat_root(root) / "glucose_release",
-            flush=True,
-        )
     print("# Status: python3 scripts/download_maxsat_solvers.py --list", flush=True)
 
 

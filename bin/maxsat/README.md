@@ -17,7 +17,6 @@ python3 scripts/download_maxsat_solvers.py --list
 | Every MSE zip in `manifest.json` | no flags |
 | Pick solvers | `--only maxcdcl evalmaxsat` |
 | Open-WBO | `--build open-wbo` (`git`, `make`, `libgmp-dev` / `brew install gmp`) |
-| `glucose_release` | Copy to `bin/maxsat/glucose_release` (manual) |
 
 Re-run `--bench` safely: already-installed runnable binaries are skipped unless you pass `--force`.
 
@@ -28,7 +27,6 @@ bin/maxsat/
   manifest.json
   maxcdcl/MaxCDCL/bin/maxcdcl_static   # from --bench
   evalmaxsat/EvalMaxSAT/bin/EvalMaxSAT
-  glucose_release                      # optional flat drop-in
 ```
 
 Override root: `export QEECC_SAT_MAXSAT_DIR=/path/to/maxsat`
