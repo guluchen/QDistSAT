@@ -24,11 +24,10 @@ if [[ ! -d "${STEMS_DIR}" ]]; then
   exit 1
 fi
 
-if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
-  PYTHON="${REPO_ROOT}/.venv/bin/python"
-else
-  PYTHON="${PYTHON:-python3}"
-fi
+# shellcheck source=_benchmark_env.sh
+source "${SCRIPT_DIR}/_benchmark_env.sh"
+resolve_benchmark_python "${REPO_ROOT}"
+require_benchmark_python_deps "${REPO_ROOT}"
 
 cd "${REPO_ROOT}"
 

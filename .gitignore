@@ -92,6 +92,7 @@ scripts/*
 !scripts/install_distqldpc.py
 !scripts/install_dist_m4ri.py
 !scripts/parse_benchmark_log_to_latex.py
+!scripts/_benchmark_env.sh
 !scripts/run_benchmark_stems_dir.sh
 !scripts/run_benchmark_six_stemdirs.sh
 

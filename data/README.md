@@ -37,6 +37,8 @@ Matrices for batch runs live under `data/BB`, `data/BB2`, … (each folder is a 
 Run all six in parallel (default 60s per config, all default solvers, one log per folder):
 
 ```bash
+source venv/bin/activate   # or: export PYTHON=$PWD/venv/bin/python
+pip install -e ".[dev]"
 ./scripts/run_benchmark_six_stemdirs.sh
 ./scripts/run_benchmark_six_stemdirs.sh --timeout 120 --foreground
 ```

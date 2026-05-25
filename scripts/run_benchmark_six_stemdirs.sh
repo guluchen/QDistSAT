@@ -46,8 +46,10 @@ Options:
   -h, --help          Show this help
 
 Environment:
-  PYTHON              Python executable (default: .venv/bin/python or python3)
+  PYTHON              Python executable (else VIRTUAL_ENV, then venv/ or .venv/)
   DATA_ROOT, LOG_DIR  Override defaults before flags
+
+Requires: project venv with pip install -e ".[dev]" (pysat + qecc_sat).
 
 Examples:
   ./scripts/run_benchmark_six_stemdirs.sh
@@ -97,10 +99,11 @@ done
 [[ "${DATA_ROOT}" != /* ]] && DATA_ROOT="${REPO_ROOT}/${DATA_ROOT}"
 [[ "${LOG_DIR}" != /* ]] && LOG_DIR="${REPO_ROOT}/${LOG_DIR}"
 
-if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
-  PYTHON="${PYTHON:-${REPO_ROOT}/.venv/bin/python}"
-else
-  PYTHON="${PYTHON:-python3}"
+# shellcheck source=_benchmark_env.sh
+source "${SCRIPT_DIR}/_benchmark_env.sh"
+resolve_benchmark_python "${REPO_ROOT}"
+if [[ "${DRY_RUN}" -eq 0 ]]; then
+  require_benchmark_python_deps "${REPO_ROOT}"
 fi
 
 cd "${REPO_ROOT}"
@@ -123,6 +126,7 @@ if [[ ${#missing[@]} -gt 0 ]]; then
 fi
 
 echo "# repo=${REPO_ROOT}" >&2
+echo "# python=${PYTHON}" >&2
 echo "# timeout=${TIMEOUT}s per config, jobs=${JOBS} per directory" >&2
 echo "# solvers=default (all tools)" >&2
 echo "# pid file: ${PID_FILE}" >&2
