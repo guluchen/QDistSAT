@@ -88,10 +88,12 @@ DEFAULT_BENCHMARK_SOLVERS = [
 
 
 def _default_benchmark_solvers() -> list[str]:
-    """Default --solvers list (always includes DistQLDPC reference runs)."""
+    """Default --solvers list (includes DistQLDPC + codeDistance comparison backends)."""
     names = list(DEFAULT_BENCHMARK_SOLVERS)
     if DISTQLDPC_SOLVER not in names:
         names.append(DISTQLDPC_SOLVER)
+    if CODEDISTANCE_SOLVER not in names:
+        names.append(CODEDISTANCE_SOLVER)
     return names
 
 # Grouped for --help / --list-solvers (names are case-insensitive on the CLI).

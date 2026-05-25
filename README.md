@@ -50,11 +50,10 @@ python3 scripts/install_benchmark_deps.py --list   # distqldpc, maxcdcl, codedis
 # logical bases (if Gx/Gz missing; requires pip install above)
 precompute-logicals BB_108_8_10
 
-# benchmark (rc2-* needs no download; maxcdcl / distqldpc from install above)
-python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10 \
-  --solvers rc2-glucose42 maxcdcl distqldpc
-# optional codeDistance comparison: add codedistance (or cd-gurobi cd-m4ri-cc …)
-# distqldpc: two runs per stem (-no-card, -card-mto); needs Gx/Gz
+# benchmark default: all PySAT backends + distqldpc + codedistance (cd-* ×4)
+python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10
+# narrower run: --solvers rc2-glucose42 maxcdcl distqldpc
+# distqldpc: two runs per stem; codedistance: four cd-* (skip if pip/binary missing)
 ```
 
 Use `python3` (not bare `python`) on Debian unless you installed `python-is-python3`. Inside an active venv, `python` also works after `pip install` succeeds.
@@ -96,13 +95,13 @@ Fine-grained installs:
 | codeDistance pip only | `pip install -e ".[comparison]"` |
 | dist-m4ri only | `python3 scripts/install_dist_m4ri.py` |
 
-### codeDistance comparison (`--solvers codedistance`)
+### codeDistance comparison (default: `codedistance`)
 
-[codeDistancePYPI](https://github.com/m-webster/codeDistancePYPI) backends (**GurobiDist**, **MIPDist**/SCIP, **dist_m4ri_CC**, **magmaMinWord**) are installed by `install_benchmark_deps.py` but **not** in the default benchmark `--solvers` list (add explicitly):
+Default `--solvers` includes **`codedistance`** (runs **cd-gurobi**, **cd-mip-scip**, **cd-m4ri-cc**, **cd-magma**). Install via `install_benchmark_deps.py`; missing deps show as skipped rows, not a hard error.
 
 ```bash
 python3 benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6 \
-  --solvers rc2-glucose42 maxcdcl distqldpc codedistance
+  --solvers codedistance   # only the four cd-* backends
 ```
 
 **GurobiDist** needs a Gurobi license; **magmaMinWord** needs the `magma` binary on `PATH`, or:
