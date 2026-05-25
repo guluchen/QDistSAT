@@ -167,6 +167,63 @@ def _prepend_repo_bin_to_path() -> None:
             os.environ["PATH"] = bin_dir + (os.pathsep + path if path else "")
 
 
+def magma_install_hint() -> str:
+    return (
+        "cd-magma (magmaMinWord): export QEECC_SAT_MAGMA=/path/to/magma executable, "
+        "or MAGMA_HOME=/home/yfc/distanceLibTest, or add Magma's bin dir to PATH"
+    )
+
+
+def _magma_candidates() -> list[Path]:
+    paths: list[Path] = []
+    for env in ("QEECC_SAT_MAGMA", "MAGMA_BIN"):
+        v = os.environ.get(env)
+        if v:
+            paths.append(Path(v).expanduser())
+    for env_home in ("MAGMA_HOME", "MAGMA_ROOT"):
+        home = os.environ.get(env_home)
+        if home:
+            base = Path(home).expanduser()
+            for sub in ("", "magma", "bin", "Magma"):
+                d = base / sub if sub else base
+                paths.append(d / "magma")
+                paths.append(d)
+    for base in (Path.home() / "distanceLibTest",):
+        if base.is_dir():
+            for sub in ("", "magma", "bin", "Magma", "magma-2.28-14"):
+                d = base / sub if sub else base
+                paths.append(d / "magma")
+                paths.append(d)
+    which = shutil.which("magma")
+    if which:
+        paths.append(Path(which))
+    seen: set[Path] = set()
+    out: list[Path] = []
+    for p in paths:
+        rp = p.resolve() if p.exists() else p
+        if rp not in seen:
+            seen.add(rp)
+            out.append(p)
+    return out
+
+
+def resolve_magma_executable() -> Optional[str]:
+    for path in _magma_candidates():
+        if _is_runnable_exe(path):
+            return str(path.resolve())
+    return None
+
+
+def _prepend_magma_to_path() -> None:
+    exe = resolve_magma_executable()
+    if exe is None:
+        return
+    bin_dir = str(Path(exe).parent.resolve())
+    path = os.environ.get("PATH", "")
+    if bin_dir not in path.split(os.pathsep):
+        os.environ["PATH"] = bin_dir + (os.pathsep + path if path else "")
+
+
 def codedistance_pip_install_hint() -> str:
     return (
         'pip install -e ".[comparison]"  '
@@ -196,12 +253,8 @@ def codedistance_prerequisite(config_id: str) -> Optional[tuple[str, str]]:
         if resolve_dist_m4ri_executable() is None:
             return ("dist_m4ri not installed", dist_m4ri_install_hint())
     elif config_id == "magma":
-        if shutil.which("magma") is None:
-            return (
-                "magma not on PATH",
-                "cd-magma (magmaMinWord): install Magma https://magma.maths.usyd.edu.au/magma/ "
-                "and ensure the magma binary is on PATH",
-            )
+        if resolve_magma_executable() is None:
+            return ("magma not on PATH", magma_install_hint())
     return None
 
 
@@ -221,13 +274,10 @@ def explain_codedistance_failure(
         "no such file" in low or "not found" in low or "errno 2" in low
     ):
         return ("dist_m4ri not installed", dist_m4ri_install_hint())
-    if config_id == "magma" or (
-        "magma" in low and ("no such file" in low or "not found" in low or "errno 2" in low)
+    if "magma" in low and (
+        "no such file" in low or "not found" in low or "errno 2" in low
     ):
-        return (
-            "magma not on PATH",
-            "cd-magma (magmaMinWord): install Magma and add the magma binary to PATH",
-        )
+        return ("magma not on PATH", magma_install_hint())
     if config_id == "gurobi" or "gurobi" in low:
         return (
             "Gurobi failed",
@@ -318,6 +368,8 @@ def run_codedistance(
 
     if method == "dist_m4ri_CC":
         _prepend_repo_bin_to_path()
+    if method == "magmaMinWord":
+        _prepend_magma_to_path()
 
     t0 = time.perf_counter()
     try:
