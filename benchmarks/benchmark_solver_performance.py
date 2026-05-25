@@ -14,7 +14,7 @@ Usage:
   # Default: 180s (3 min) wall-clock timeout per configuration
   python benchmarks/benchmark_solver_performance.py --quick   # SC_9_1_3, d=3
   python benchmarks/benchmark_solver_performance.py --stem SC_9_1_3 -d 3 --solvers rc2-g3 maxcdcl distqldpc
-  python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6 --solvers codedistance  # optional pip [comparison]
+  python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6  # default includes codedistance
   python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6
   python benchmarks/benchmark_solver_performance.py --stem BB_144_12_12 -d 12
   python benchmarks/benchmark_solver_performance.py --stems BB_72_12_6 BB_90_8_10
@@ -164,8 +164,8 @@ def _format_solver_names_help() -> str:
     )
     parts.append(
         "Names are case-insensitive. External MaxSAT entries are skipped when the "
-        "binary is missing on this host (see --list-solvers). Default: all except "
-        "minisatgh."
+        "binary is missing on this host (see --list-solvers). Default: all PySAT "
+        "except minisatgh, plus distqldpc and codedistance (cd-* ×4)."
     )
     return " ".join(parts)
 
