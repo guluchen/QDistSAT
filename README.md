@@ -24,7 +24,7 @@ git clone git@github.com:guluchen/QDistSAT.git
 Minimal Python on Debian often lacks `venv` and blocks system-wide `pip` (PEP 668). Install once:
 
 ```bash
-sudo apt install -y python3-venv python3-pip
+sudo apt install -y python3-venv python3-pip git make libgmp-dev
 # if `python3 -m venv` still fails, match your version, e.g.:
 # sudo apt install -y python3.12-venv
 ```
@@ -61,7 +61,7 @@ On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Do
 
 Only needed if you pass external names to `--solvers` (e.g. `maxcdcl`, `evalmaxsat`). **PySAT backends** (`rc2-glucose42`, `rc2-g3`, …) work after `pip install` alone.
 
-**Linux x86_64** — one command (downloads `maxcdcl` + `evalmaxsat`; skips if already installed):
+**Linux x86_64** — one command (downloads `maxcdcl` + `evalmaxsat`, builds `open-wbo`; skips if already OK):
 
 ```bash
 python3 scripts/download_maxsat_solvers.py --bench
@@ -70,10 +70,10 @@ python3 scripts/download_maxsat_solvers.py --list   # optional: verify status (O
 
 | You want | Command |
 |----------|---------|
-| Default benchmark binaries | `--bench` |
+| Default benchmark binaries (`maxcdcl`, `evalmaxsat`, `open-wbo`) | `--bench` |
 | All MSE zip solvers | `python3 scripts/download_maxsat_solvers.py` (no flags) |
 | One solver | `--only maxcdcl` |
-| Open-WBO (compile) | `--build open-wbo` (needs `git`, `make`, `libgmp-dev`) |
+| Build only Open-WBO | `--build open-wbo` |
 
 Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 

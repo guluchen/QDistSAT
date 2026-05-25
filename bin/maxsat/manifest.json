@@ -54,17 +54,6 @@
       "executable_relpath": "open-wbo",
       "command": ["{exe}", "{wcnf}"],
       "output_format": "o_v_lines"
-    },
-    {
-      "id": "glucose_release",
-      "solver_type": "glucose_release",
-      "title": "COMiniSatPS MaxSAT (glucose_release; manual drop-in)",
-      "linux_elf": false,
-      "install_layout": "flat",
-      "zip_url": null,
-      "executable_relpath": "glucose_release",
-      "command": ["{exe}", "-verb=0", "{wcnf}", "{out}"],
-      "output_format": "cominisatps_optimal"
     }
   ]
 }

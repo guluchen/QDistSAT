@@ -3,10 +3,9 @@
 Download / build MaxSAT binaries into bin/maxsat/<id>/ (see bin/maxsat/manifest.json).
 
 Examples:
-  python3 scripts/download_maxsat_solvers.py --bench   # recommended: maxcdcl + evalmaxsat
+  python3 scripts/download_maxsat_solvers.py --bench   # maxcdcl, evalmaxsat, open-wbo
   python3 scripts/download_maxsat_solvers.py --list    # check what is installed
   python3 scripts/download_maxsat_solvers.py             # all MSE zip solvers
-  python3 scripts/download_maxsat_solvers.py --build open-wbo
 """
 
 from __future__ import annotations
@@ -33,8 +32,9 @@ from qecc_sat.maxsat_registry import (  # noqa: E402
     maxsat_root,
 )
 
-# Matches README quick-start benchmark (--solvers rc2-glucose42 maxcdcl …).
+# README / run_benchmark_stems_dir.sh defaults.
 BENCH_ZIP_IDS = ("maxcdcl", "evalmaxsat")
+BENCH_BUILD_IDS = ("open-wbo",)
 
 
 def _download_zip(spec: MaxSATBinarySpec, install_dir: Path) -> None:
@@ -179,7 +179,10 @@ def main() -> None:
     parser.add_argument(
         "--bench",
         action="store_true",
-        help=f"Install benchmark defaults: {', '.join(BENCH_ZIP_IDS)} (skip if already OK)",
+        help=(
+            "Install benchmark defaults: "
+            f"{', '.join(BENCH_ZIP_IDS)} (zip) + {', '.join(BENCH_BUILD_IDS)} (build); skip if OK"
+        ),
     )
     parser.add_argument("--only", nargs="*", metavar="ID", help="Manifest ids (zip download)")
     parser.add_argument("--build", nargs="*", metavar="ID", help="Build from git")
@@ -197,10 +200,14 @@ def main() -> None:
         raise SystemExit("Use either --bench or --only, not both.")
 
     specs = {s.id: s for s in load_manifest()}
-    to_zip = args.only
+    to_zip: list[str] | None = args.only
+    to_build = list(args.build or [])
     if args.bench:
         to_zip = list(BENCH_ZIP_IDS)
-    elif to_zip is None and not args.build:
+        for bid in BENCH_BUILD_IDS:
+            if bid not in to_build:
+                to_build.append(bid)
+    elif to_zip is None and not to_build:
         # MSE prebuilt zips (CASHW, EvalMaxSAT, MaxCDCL, …)
         to_zip = [s.id for s in specs.values() if s.zip_url and s.linux_elf]
 
@@ -224,17 +231,20 @@ def main() -> None:
             shutil.rmtree(install_dir)
         _download_zip(spec, install_dir)
 
-    if to_zip or args.build:
-        _print_post_install_hints(root)
-
-    for sid in args.build or []:
+    for sid in to_build:
         if sid not in specs:
             raise SystemExit(f"Unknown id {sid!r}")
         spec = specs[sid]
+        if maxsat_runnable_on_host(spec.solver_type, root=root) and not args.force:
+            print(f"# Already OK: {spec.id} ({spec.executable_path(root)})", flush=True)
+            continue
         install_dir = root / spec.id
         if install_dir.exists() and args.force:
             shutil.rmtree(install_dir)
         _build_git(spec, install_dir)
+
+    if to_zip or to_build:
+        _print_post_install_hints(root)
 
 
 if __name__ == "__main__":

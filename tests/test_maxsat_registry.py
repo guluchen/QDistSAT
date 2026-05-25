@@ -8,7 +8,6 @@ from qecc_sat.maxsat_external import parse_cominisatps_optimal, parse_o_v_lines
 from qecc_sat.maxsat_registry import (
     get_spec,
     host_supports_linux_elf,
-    is_installed,
     list_status,
     load_manifest,
     maxsat_runnable_on_host,
@@ -21,7 +20,7 @@ def test_manifest_loads():
     assert "cashw-coreplus" in ids
     assert "evalmaxsat" in ids
     assert "maxcdcl" in ids
-    assert "glucose_release" in ids
+    assert "open-wbo" in ids
 
 
 def test_parse_o_v_lines():
@@ -43,24 +42,11 @@ def test_get_spec_evalmaxsat():
     assert spec.output_format == "o_v_lines"
 
 
-def test_get_spec_glucose_release_flat():
-    spec = get_spec("glucose_release")
-    assert spec.install_layout == "flat"
-    assert spec.output_format == "cominisatps_optimal"
-    assert spec.executable_path().name == "glucose_release"
-
-
 def test_parse_cominisatps_optimal():
     text = "c initCost: 0, fixedBySearch: 0, optimal: 3, maxsat: 2\ns SATISFIABLE\n"
     cost, model = parse_cominisatps_optimal(text)
     assert cost == 3
     assert model is None
-
-
-def test_glucose_release_runnable_if_installed():
-    if not is_installed("glucose_release"):
-        pytest.skip("glucose_release binary not present")
-    assert maxsat_runnable_on_host("glucose_release")
 
 
 def test_linux_elf_not_runnable_off_linux():
