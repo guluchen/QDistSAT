@@ -42,6 +42,7 @@ from pysat.card import EncType
 from qecc_sat import DEFAULT_MATRIX_DIR
 from qecc_sat.literature_distances import LITERATURE_BB_DISTANCES
 from qecc_sat.io import build_s_from_hx_hz, load_matrix, resolve_precomputed_logical_basis
+from qecc_sat.distqldpc_runner import DISTQLDPC_SOLVER, distqldpc_available, run_distqldpc
 from qecc_sat.maxsat_registry import maxsat_runnable_on_host
 from qecc_sat.maxsat_solver import is_external_maxsat_solver, is_maxsat_solver
 from qecc_sat.sat_solver import NATIVE_ONLY_CARD_SOLVERS, XOR_SUPPORTED_SOLVERS, SolverType
@@ -119,6 +120,8 @@ _SOLVER_GROUPS: tuple[tuple[str, tuple[SolverType, ...]], ...] = (
         ),
     ),
 )
+# Not a SolverType; use ``--solvers distqldpc`` (needs ``--bench`` install).
+_DISTQLDPC_GROUP_TITLE = "Reference (DistQLDPC binary)"
 # In SolverType but omitted from default benchmark runs.
 _EXTRA_SOLVER_NAMES = (SolverType.MINISAT_GH.value,)
 
@@ -129,6 +132,7 @@ def _format_solver_names_help() -> str:
     for title, members in _SOLVER_GROUPS:
         names = ", ".join(s.value for s in members)
         parts.append(f"{title}: {names}")
+    parts.append(f"{_DISTQLDPC_GROUP_TITLE}: {DISTQLDPC_SOLVER}")
     parts.append(
         f"Also defined but not in default benchmark: {', '.join(_EXTRA_SOLVER_NAMES)}"
     )
@@ -154,9 +158,17 @@ def _print_solver_names(*, runnable_external: bool) -> None:
                 elif not ok:
                     note = "  [not installed]"
             print(f"  {st.value}{note}", flush=True)
+    print(f"\n{_DISTQLDPC_GROUP_TITLE}:", flush=True)
+    dq_note = (
+        "  [installed]"
+        if distqldpc_available()
+        else "  [not installed — run: python3 scripts/download_maxsat_solvers.py --bench]"
+    )
+    print(f"  {DISTQLDPC_SOLVER}{dq_note}", flush=True)
     print(f"\nNot in default benchmark: {', '.join(_EXTRA_SOLVER_NAMES)}", flush=True)
     print(
         "\nMaxSAT solvers use one optimization pass (encoding shown as maxsat). "
+        f"{DISTQLDPC_SOLVER} reports c d_lb / c d_ub from stdout (one run per stem). "
         "Others are tested with each --encodings value.",
         flush=True,
     )
@@ -333,6 +345,24 @@ def _collect_benchmark_jobs(
 ) -> list[_BenchmarkJob]:
     jobs: list[_BenchmarkJob] = []
     for sname in solvers_to_test:
+        if sname.lower() == DISTQLDPC_SOLVER:
+            if not distqldpc_available():
+                print(
+                    f"# Skip {DISTQLDPC_SOLVER}: binary not found "
+                    f"(python3 scripts/download_maxsat_solvers.py --bench)",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                continue
+            jobs.append(
+                _BenchmarkJob(
+                    DISTQLDPC_SOLVER,
+                    "ref",
+                    "native",
+                    "ref",
+                )
+            )
+            continue
         try:
             st = SolverType(sname.lower())
         except ValueError:
@@ -402,6 +432,50 @@ def _css_split_card_label(
     return label
 
 
+def _run_distqldpc_job(
+    stem: str,
+    matrix_dir: Path,
+    timeout_sec: Optional[float],
+) -> dict:
+    result = {
+        "solver": DISTQLDPC_SOLVER,
+        "cardinality": "ref",
+        "encoding": "ref",
+        "ok": False,
+        "time_sec": None,
+        "result": None,
+        "vars": None,
+        "clauses": None,
+        "clauses_approx": False,
+        "error": None,
+        "d_lb": None,
+        "d_ub": None,
+    }
+    try:
+        dq = run_distqldpc(
+            stem,
+            matrix_dir,
+            cpu_lim_sec=timeout_sec,
+        )
+        result["time_sec"] = round(dq.elapsed_sec, 3)
+        result["d_lb"] = dq.d_lb
+        result["d_ub"] = dq.d_ub
+        formatted = dq.format_result()
+        if formatted is not None:
+            result["result"] = formatted
+        if dq.proved:
+            result["ok"] = True
+        elif dq.timed_out or (timeout_sec and dq.elapsed_sec >= float(timeout_sec) * 0.95):
+            result["error"] = "timeout"
+        elif formatted is not None:
+            result["error"] = "bounds"
+        else:
+            result["error"] = f"exit {dq.returncode}"[:60]
+    except Exception as e:
+        result["error"] = str(e).replace("\n", " ")[:60]
+    return result
+
+
 def _execute_benchmark_job(
     s: list[list[int]],
     hx: Optional[list[list[int]]],
@@ -417,7 +491,14 @@ def _execute_benchmark_job(
     enable_stopping_closure: bool,
     enable_dynamic_deficit: bool,
     dynamic_block_limit: int,
+    *,
+    stem: str,
+    matrix_dir: Path,
 ) -> dict:
+    if job.solver_name == DISTQLDPC_SOLVER:
+        r = _run_distqldpc_job(stem, matrix_dir, timeout_sec)
+        r["encoding"] = job.display_encoding
+        return r
     st = SolverType(job.solver_name)
     enc = ENC_MAP.get(job.encoding_key)
     r = run_one(
