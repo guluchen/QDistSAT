@@ -46,10 +46,12 @@ from qecc_sat.distqldpc_runner import (
     DISTQLDPC_BENCH_CONFIGS,
     DISTQLDPC_SOLVER,
     distqldpc_available,
+    distqldpc_install_hint,
+    distqldpc_missing_status,
     format_distance_bounds,
     run_distqldpc,
 )
-from qecc_sat.maxsat_registry import maxsat_runnable_on_host
+from qecc_sat.maxsat_registry import external_maxsat_skip_reason, maxsat_runnable_on_host
 from qecc_sat.maxsat_solver import is_external_maxsat_solver, is_maxsat_solver
 from qecc_sat.sat_solver import NATIVE_ONLY_CARD_SOLVERS, XOR_SUPPORTED_SOLVERS, SolverType
 from qecc_sat.subprocess_utils import isolate_process_session, kill_process_tree
@@ -367,8 +369,7 @@ def _collect_benchmark_jobs(
             continue
         if is_external_maxsat_solver(st) and not maxsat_runnable_on_host(st.value):
             print(
-                f"# Skip {sname}: external MaxSAT binary not runnable on this host "
-                f"(MSE linux_elf solvers need Linux x86_64; see --list-solvers)",
+                f"# Skip {sname}: {external_maxsat_skip_reason(st.value)}",
                 file=sys.stderr,
                 flush=True,
             )
@@ -484,8 +485,10 @@ def _run_distqldpc_job(
             result["error"] = "bounds"
         else:
             result["error"] = f"exit {dq.returncode}"[:60]
-    except FileNotFoundError:
-        result["error"] = "distqldpc missing (python3 scripts/download_maxsat_solvers.py --bench)"
+    except FileNotFoundError as e:
+        result["error"] = distqldpc_missing_status()
+        if str(e).strip():
+            print(f"# {e}", file=sys.stderr, flush=True)
     except Exception as e:
         result["error"] = str(e).replace("\n", " ")[:60]
     return result
@@ -1398,12 +1401,8 @@ def main() -> None:
 
     solvers_to_test = args.solvers or _default_benchmark_solvers()
     if DISTQLDPC_SOLVER in solvers_to_test and not distqldpc_available():
-        print(
-            f"# Warning: {DISTQLDPC_SOLVER} listed but binary missing — "
-            f"install: python3 scripts/download_maxsat_solvers.py --bench "
-            f"(benchmark will show error rows for no-card / card-mto)",
-            flush=True,
-        )
+        print(f"# Warning: {DISTQLDPC_SOLVER} listed but binary missing.", flush=True)
+        print(f"# {distqldpc_install_hint()}", file=sys.stderr, flush=True)
     encodings_to_test = list(
         dict.fromkeys(args.encodings or DEFAULT_ENCODINGS)
     )

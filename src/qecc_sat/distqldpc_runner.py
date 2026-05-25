@@ -6,7 +6,9 @@ See https://github.com/guluchen/DistQLDPC
 
 from __future__ import annotations
 
+import os
 import re
+import shutil
 import subprocess
 import time
 from dataclasses import dataclass
@@ -123,14 +125,77 @@ def parse_distqldpc_output(text: str) -> DistQLDPCResult:
     )
 
 
-def resolve_distqldpc_exe() -> Path:
-    if PUBLIC_BIN.is_file():
-        return PUBLIC_BIN
-    if VENDOR_BIN.is_file():
-        return VENDOR_BIN
-    raise FileNotFoundError(
-        "DistQLDPC not built. Run: python3 scripts/download_maxsat_solvers.py --bench"
+def _is_runnable_exe(path: Path) -> bool:
+    return path.is_file() and os.access(path, os.X_OK)
+
+
+def repo_root_candidates() -> list[Path]:
+    """Repo roots to search for ``bin/distqldpc`` (editable install, cwd, env)."""
+    roots: list[Path] = []
+    env_root = os.environ.get("QEECC_SAT_REPO_ROOT")
+    if env_root:
+        roots.append(Path(env_root).resolve())
+    roots.append(REPO_ROOT.resolve())
+    cwd = Path.cwd().resolve()
+    for parent in [cwd, *cwd.parents][:8]:
+        if (parent / "bin" / "maxsat" / "manifest.json").is_file():
+            roots.append(parent)
+            break
+    seen: set[Path] = set()
+    out: list[Path] = []
+    for root in roots:
+        if root not in seen:
+            seen.add(root)
+            out.append(root)
+    return out
+
+
+def distqldpc_exe_candidates() -> list[Path]:
+    paths: list[Path] = []
+    env_exe = os.environ.get("QEECC_SAT_DISTQLDPC")
+    if env_exe:
+        paths.append(Path(env_exe).expanduser())
+    for root in repo_root_candidates():
+        paths.append(root / "bin" / "distqldpc")
+        paths.append(root / "vendor" / "DistQLDPC" / "bin" / "distqldpc")
+    which = shutil.which("distqldpc")
+    if which:
+        paths.append(Path(which))
+    # Defaults last (may be broken symlinks).
+    paths.append(PUBLIC_BIN)
+    paths.append(VENDOR_BIN)
+    seen: set[Path] = set()
+    out: list[Path] = []
+    for path in paths:
+        key = path.resolve() if path.exists() else path
+        if key not in seen:
+            seen.add(key)
+            out.append(path)
+    return out
+
+
+def distqldpc_install_hint() -> str:
+    checked = ", ".join(str(p) for p in distqldpc_exe_candidates()[:4])
+    return (
+        "DistQLDPC binary not found. Build it from the repo root:\n"
+        "  python3 scripts/install_distqldpc.py\n"
+        "  python3 scripts/install_benchmark_deps.py --list   # should show distqldpc OK\n"
+        "  ./bin/distqldpc data/matrices/BB_108_8_10           # smoke test\n"
+        "Debian/Ubuntu deps: sudo apt install -y g++ make zlib1g-dev git\n"
+        f"Checked: {checked}"
     )
+
+
+def distqldpc_missing_status() -> str:
+    """Short Status column text when the binary is absent."""
+    return "distqldpc missing (python3 scripts/install_distqldpc.py)"
+
+
+def resolve_distqldpc_exe() -> Path:
+    for path in distqldpc_exe_candidates():
+        if _is_runnable_exe(path):
+            return path
+    raise FileNotFoundError(distqldpc_install_hint())
 
 
 def distqldpc_available() -> bool:

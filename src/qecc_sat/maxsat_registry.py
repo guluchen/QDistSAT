@@ -186,6 +186,26 @@ def maxsat_runnable_on_host(solver_type: str, *, root: Optional[Path] = None) ->
         return False
 
 
+def external_maxsat_skip_reason(solver_type: str, *, root: Optional[Path] = None) -> str:
+    """Human-readable reason when ``maxsat_runnable_on_host`` is false."""
+    spec = get_spec(solver_type)
+    if spec.linux_elf and not host_supports_linux_elf():
+        mach = platform.machine()
+        return (
+            f"MSE linux_elf binary needs Linux x86_64 (this host: "
+            f"{platform.system()} {mach})"
+        )
+    if not is_installed(solver_type, root=root):
+        return not_installed_status(spec)
+    try:
+        resolve_executable(solver_type, root=root, check_platform=True)
+    except MaxSATPlatformError as e:
+        return str(e)
+    except (FileNotFoundError, MaxSATNotInstalledError) as e:
+        return str(e)
+    return "not runnable (see --list-solvers)"
+
+
 def is_installed(solver_type: str, *, root: Optional[Path] = None) -> bool:
     try:
         resolve_executable(solver_type, root=root)
