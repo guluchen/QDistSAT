@@ -65,7 +65,7 @@ def parse_o_v_lines(stdout: str) -> Tuple[Optional[int], Optional[List[int]]]:
 
 def parse_cominisatps_optimal(stdout: str) -> Tuple[Optional[int], Optional[List[int]]]:
     """
-    Parse COMiniSatPS / glucose_release stats (``c ... optimal: <cost>, maxsat: ...``).
+    Parse COMiniSatPS-style stats (``c ... optimal: <cost>, maxsat: ...``).
     """
     cost: Optional[int] = None
     for line in stdout.splitlines():

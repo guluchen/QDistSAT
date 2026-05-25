@@ -16,6 +16,7 @@ MaxSAT reference implementation). Matrix layout and attribution match DistQLDPC;
 | `src/qecc_sat/literature_distances.py` | Default `-d` for known BB stems |
 | `src/qecc_sat/cli/precompute_logical_bases.py` | `precompute-logicals` CLI |
 | `benchmarks/benchmark_solver_performance.py` | Main benchmark driver |
+| `scripts/install_benchmark_deps.py` | One-shot: pip `z3-solver`/`cvc5` + MaxSAT `--bench` + DistQLDPC |
 | `scripts/download_maxsat_solvers.py` | External MaxSAT install (`--bench`) |
 | `scripts/install_distqldpc.py` | DistQLDPC clone/build (`vendor/DistQLDPC`, `bin/distqldpc`) |
 | `scripts/parse_benchmark_log_to_latex.py` | Log → LaTeX |

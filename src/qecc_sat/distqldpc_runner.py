@@ -11,11 +11,18 @@ import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 
 from . import REPO_ROOT
 
 DISTQLDPC_SOLVER = "distqldpc"
+
+# DistQLDPC CLI cardinality modes (see distqldpc.cc). Benchmark runs both.
+DISTQLDPC_BENCH_CONFIGS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("no-card", ("-no-card",)),
+    ("card-mto", ("-card-mto",)),  # MTO tree encoding (user-facing label: card-mto)
+)
+
 PUBLIC_BIN = REPO_ROOT / "bin" / "distqldpc"
 VENDOR_BIN = REPO_ROOT / "vendor" / "DistQLDPC" / "bin" / "distqldpc"
 
@@ -23,6 +30,11 @@ _RE_D_LB = re.compile(r"^c\s+d_lb:\s*(\d+)\s*$", re.MULTILINE)
 _RE_D_UB = re.compile(r"^c\s+d_ub:\s*(\d+)\s*$", re.MULTILINE)
 _RE_D = re.compile(r"^c\s+d\s*:\s*(\d+)\s*$", re.MULTILINE)
 _RE_O = re.compile(r"^o\s+(-?\d+)\s*$", re.MULTILINE)
+# With ``-v``: final solver size and post-elimination CNF size (approximate for Clauses).
+_RE_NOF_VARS = re.compile(r"vars\s+(\d+)\s+\(base\s+\d+", re.MULTILINE)
+_RE_REDUCED_CLS = re.compile(
+    r"Reduced to\s+\d+\s+vars,\s+(\d+)\s+cls\b", re.MULTILINE
+)
 
 
 @dataclass(frozen=True)
@@ -38,6 +50,9 @@ class DistQLDPCResult:
     returncode: int
     elapsed_sec: float
     timed_out: bool = False
+    nof_vars: Optional[int] = None
+    nof_clauses: Optional[int] = None
+    clauses_approx: bool = False
 
     @property
     def proved(self) -> bool:
@@ -46,20 +61,33 @@ class DistQLDPCResult:
         return self.o is not None and self.o >= 0
 
     def format_result(self) -> Optional[str]:
-        """Display string aligned with QDistSAT benchmark partial results."""
-        if self.d is not None:
-            return str(self.d)
-        if self.o is not None and self.o >= 0:
-            return str(self.o)
-        if self.d_lb is not None and self.d_ub is not None:
-            if self.d_lb == self.d_ub:
-                return str(self.d_lb)
-            return f"[{self.d_lb},{self.d_ub}]"
-        if self.d_lb is not None:
-            return f"≥{self.d_lb}"
-        if self.d_ub is not None:
-            return f"≤{self.d_ub}"
-        return None
+        """Benchmark Result column: exact ``d`` only; else same as SAT partial (≥lb, ≤ub, [lb,ub])."""
+        if self.proved:
+            if self.d is not None:
+                return str(self.d)
+            if self.o is not None and self.o >= 0:
+                return str(self.o)
+        return format_distance_bounds(lb=self.d_lb, ub=self.d_ub)
+
+
+def format_distance_bounds(
+    *,
+    lb: Optional[int] = None,
+    ub: Optional[int] = None,
+    witness: Optional[int] = None,
+) -> Optional[str]:
+    """Shared with SAT benchmark timeout formatting (``≥lb``, ``≤ub``, ``[lb,ub]``)."""
+    if witness is not None:
+        return str(int(witness))
+    if lb is not None and ub is not None:
+        if lb == ub:
+            return str(int(lb))
+        return f"[{int(lb)},{int(ub)}]"
+    if lb is not None:
+        return f"≥{int(lb)}"
+    if ub is not None:
+        return f"≤{int(ub)}"
+    return None
 
 
 def _last_int(matches: list[re.Match[str]]) -> Optional[int]:
@@ -68,8 +96,18 @@ def _last_int(matches: list[re.Match[str]]) -> Optional[int]:
     return int(matches[-1].group(1))
 
 
+def _parse_size_stats(text: str) -> tuple[Optional[int], Optional[int], bool]:
+    """Extract ``nof_vars`` / ``nof_clauses`` from verbose DistQLDPC stdout."""
+    var_matches = list(_RE_NOF_VARS.finditer(text))
+    cls_matches = list(_RE_REDUCED_CLS.finditer(text))
+    nof_vars = _last_int(var_matches)
+    nof_clauses = _last_int(cls_matches)
+    return nof_vars, nof_clauses, nof_clauses is not None
+
+
 def parse_distqldpc_output(text: str) -> DistQLDPCResult:
     """Parse DistQLDPC progress lines (last ``d_lb`` / ``d_ub`` wins)."""
+    nof_vars, nof_clauses, clauses_approx = _parse_size_stats(text)
     return DistQLDPCResult(
         d_lb=_last_int(list(_RE_D_LB.finditer(text))),
         d_ub=_last_int(list(_RE_D_UB.finditer(text))),
@@ -79,6 +117,9 @@ def parse_distqldpc_output(text: str) -> DistQLDPCResult:
         stderr="",
         returncode=0,
         elapsed_sec=0.0,
+        nof_vars=nof_vars,
+        nof_clauses=nof_clauses,
+        clauses_approx=clauses_approx,
     )
 
 
@@ -106,11 +147,16 @@ def run_distqldpc(
     *,
     cpu_lim_sec: Optional[float] = None,
     verbose: bool = False,
+    capture_stats: bool = False,
+    cli_flags: Sequence[str] = (),
 ) -> DistQLDPCResult:
     """
     Run ``bin/distqldpc`` on ``{matrix_dir}/{stem}`` (four matrix files).
 
     ``cpu_lim_sec`` maps to DistQLDPC ``-cpu-lim=`` (wall-clock SIGKILL).
+    ``cli_flags`` e.g. ``("-no-card",)`` or ``("-card-mto",)`` (see ``DISTQLDPC_BENCH_CONFIGS``).
+    ``capture_stats`` adds ``-v`` so stdout includes ``vars`` / ``Reduced to … cls`` lines
+    for benchmark Vars/Clauses columns (ignored if ``verbose`` is already set).
     """
     exe = resolve_distqldpc_exe()
     prefix = matrix_dir / stem
@@ -121,8 +167,11 @@ def run_distqldpc(
     cmd: list[str] = [str(exe)]
     if cpu_lim_sec is not None and cpu_lim_sec > 0:
         cmd.append(f"-cpu-lim={int(cpu_lim_sec)}")
-    if verbose:
+    if verbose or capture_stats:
         cmd.append("-v")
+    for flag in cli_flags:
+        if flag not in cmd:
+            cmd.append(flag)
     cmd.append(str(prefix))
 
     t0 = time.perf_counter()
@@ -151,6 +200,9 @@ def run_distqldpc(
             returncode=-1,
             elapsed_sec=elapsed,
             timed_out=True,
+            nof_vars=parsed.nof_vars,
+            nof_clauses=parsed.nof_clauses,
+            clauses_approx=parsed.clauses_approx,
         )
     elapsed = time.perf_counter() - t0
     parsed = parse_distqldpc_output(proc.stdout or "")
@@ -164,4 +216,7 @@ def run_distqldpc(
         returncode=int(proc.returncode),
         elapsed_sec=elapsed,
         timed_out=timed_out,
+        nof_vars=parsed.nof_vars,
+        nof_clauses=parsed.nof_clauses,
+        clauses_approx=parsed.clauses_approx,
     )

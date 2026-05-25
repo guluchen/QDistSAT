@@ -4,10 +4,16 @@ External MaxSAT executables used by `qecc_sat` (optional; PySAT `rc2-*` solvers 
 
 ## Install (from repo root)
 
-**Recommended** — all MSE zips + `open-wbo` + [DistQLDPC](https://github.com/guluchen/DistQLDPC) on Linux x86_64:
+**Recommended** — full benchmark (also installs `z3-solver` / `cvc5` via pip):
 
 ```bash
-# Debian/Ubuntu: --bench auto-runs `sudo apt install -y libgmp-dev` if GMP is missing
+python3 scripts/install_benchmark_deps.py
+python3 scripts/install_benchmark_deps.py --list
+```
+
+MaxSAT + DistQLDPC only (Linux x86_64 for MSE zips):
+
+```bash
 python3 scripts/download_maxsat_solvers.py --bench
 python3 scripts/download_maxsat_solvers.py --list
 ```

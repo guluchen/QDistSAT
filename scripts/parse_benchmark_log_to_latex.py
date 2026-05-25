@@ -2,7 +2,7 @@
 """
 Parse benchmark_solver_performance.py log output and emit an aggregate LaTeX table.
 
-Includes every (solver, cardinality, encoding) configuration present in the log.
+Includes every (solver, strategy) configuration present in the log.
 
 Usage:
   python scripts/parse_benchmark_log_to_latex.py logs/BB_bench_0521.log
@@ -25,7 +25,14 @@ BENCHMARK_RE = re.compile(
 )
 RESULT_LINE_RE = re.compile(
     r"^(\S+)\s+(\S+)\s+(\S+)\s+"
-    r"([\d.]+)\s+"
+    r"([\d.]+|-)\s+"
+    r"(\S+)\s+(\S+)\s+"
+    r"(\S+)\s+"
+    r"(OK|timeout)\s*$"
+)
+STRATEGY_RESULT_LINE_RE = re.compile(
+    r"^(\S+)\s+(\S+)\s+"
+    r"([\d.]+|-)\s+"
     r"(\S+)\s+(\S+)\s+"
     r"(\S+)\s+"
     r"(OK|timeout)\s*$"
@@ -61,7 +68,6 @@ SOLVER_DISPLAY: dict[str, str] = {
     "evalmaxsat": "EvalMaxSAT",
     "maxcdcl": "MaxCDCL",
     "open-wbo": "Open-WBO",
-    "glucose_release": "Glucose-Release",
 }
 
 CARD_DISPLAY: dict[str, str] = {
@@ -109,6 +115,7 @@ def parse_log(text: str) -> tuple[list[str], list[RunRecord]]:
     records: list[RunRecord] = []
     current_stem: Optional[str] = None
     in_table = False
+    table_has_strategy_column = False
 
     for raw_line in text.splitlines():
         line = raw_line.rstrip()
@@ -124,8 +131,9 @@ def parse_log(text: str) -> tuple[list[str], list[RunRecord]]:
             in_table = False
             continue
 
-        if line.startswith("Solver") and "Encoding" in line:
+        if line.startswith("Solver") and ("Strategy" in line or "Encoding" in line):
             in_table = True
+            table_has_strategy_column = "Strategy" in line
             continue
 
         if not in_table or current_stem is None:
@@ -138,18 +146,26 @@ def parse_log(text: str) -> tuple[list[str], list[RunRecord]]:
             in_table = False
             continue
 
-        m_row = RESULT_LINE_RE.match(line)
-        if not m_row:
-            continue
-
-        solver, card, encoding, time_s, _vars, _clauses, result, status = m_row.groups()
+        if table_has_strategy_column:
+            m_row = STRATEGY_RESULT_LINE_RE.match(line)
+            if not m_row:
+                continue
+            solver, strategy, time_s, _vars, _clauses, result, status = m_row.groups()
+            card = encoding = strategy.lower()
+        else:
+            m_row = RESULT_LINE_RE.match(line)
+            if not m_row:
+                continue
+            solver, card, encoding, time_s, _vars, _clauses, result, status = m_row.groups()
+            card = card.lower()
+            encoding = encoding.lower()
         records.append(
             RunRecord(
                 stem=current_stem,
                 solver=solver.lower(),
-                card=card.lower(),
-                encoding=encoding.lower(),
-                time_sec=float(time_s),
+                card=card,
+                encoding=encoding,
+                time_sec=float(time_s) if time_s != "-" else 0.0,
                 result=result,
                 status=status,
             )
@@ -179,6 +195,13 @@ def solver_display_name(solver_id: str) -> str:
 
 
 def encoding_display_name(solver_id: str, card: str, encoding: str) -> str:
+    if card == encoding:
+        if card == "maxsat":
+            return "MaxSAT"
+        if card in ENCODING_DISPLAY:
+            return ENCODING_DISPLAY[card]
+        if card in CARD_DISPLAY:
+            return CARD_DISPLAY[card]
     if card == "maxsat" and encoding == "maxsat":
         return "MaxSAT"
     enc = ENCODING_DISPLAY.get(encoding, encoding)
@@ -300,7 +323,7 @@ def render_latex_table(
         r"\label{tab:overall-performance}",
         r"\begin{tabular}{l l r r r}",
         r"\hline",
-        r"Solver & Encoding & Solved & Avg.\ Time (s) & Max Exact Distance \\",
+        r"Solver & Strategy & Solved & Avg.\ Time (s) & Max Exact Distance \\",
         r"\hline",
     ]
 

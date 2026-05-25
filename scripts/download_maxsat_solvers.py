@@ -239,8 +239,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Install external MaxSAT binaries under bin/maxsat/",
         epilog=(
-            "Quick path: python3 scripts/download_maxsat_solvers.py --bench\n"
-            "(MSE zips, open-wbo, DistQLDPC). PySAT solvers need no download."
+            "Full benchmark setup: python3 scripts/install_benchmark_deps.py\n"
+            "MaxSAT only: python3 scripts/download_maxsat_solvers.py --bench"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

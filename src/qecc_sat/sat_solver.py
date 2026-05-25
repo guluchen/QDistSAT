@@ -55,7 +55,6 @@ class SolverType(Enum):
     EVALMAXSAT = "evalmaxsat"
     MAXCDCL = "maxcdcl"
     OPEN_WBO = "open-wbo"
-    GLUCOSE_RELEASE = "glucose_release"
 
 
 # Solvers that support native XOR constraints (add_xor_clause). Others would need XOR encoded as CNF.

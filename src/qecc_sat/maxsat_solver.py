@@ -180,7 +180,7 @@ def minimize_soft_weight(
         model, cost = solve_rc2(builder, oracle, verbose=verbose)
     if cost is None:
         return None, None, builder
-    # Some external binaries (e.g. glucose_release) report optimal cost only.
+    # Some external binaries report optimal cost only (no ``v`` line).
     if model is None and not is_external_maxsat_solver(solver_type):
         return None, None, builder
     if max_weight is not None and cost > max_weight:

@@ -51,7 +51,7 @@ For the canonical attribution text and preprocessing notes, see DistQLDPC
 -------------------------------------------
 
 Not shipped in git. After download, third-party solvers (MSE builds, Open-WBO,
-COMiniSatPS / `glucose_release`, etc.) remain under their upstream licenses.
+COMiniSatPS, etc.) remain under their upstream licenses.
 See `bin/maxsat/README.md` and `bin/maxsat/manifest.json`.
 
 4. PySAT / python-sat

@@ -42,43 +42,53 @@ source venv/bin/activate
 python3 -m pip install --upgrade pip
 python3 -m pip install -e ".[dev]"
 
-# optional: external MaxSAT + DistQLDPC reference tool (see below)
-python3 scripts/download_maxsat_solvers.py --bench
-# ./bin/distqldpc BB_108_8_10   # after --bench
+# optional solvers: SMT (z3py, cvc5) + MaxSAT binaries + DistQLDPC (one script)
+python3 scripts/install_benchmark_deps.py
+python3 scripts/install_benchmark_deps.py --list   # verify z3 / cvc5 / maxcdcl / distqldpc
+# ./bin/distqldpc BB_108_8_10
 
 # logical bases (if Gx/Gz missing; requires pip install above)
 precompute-logicals BB_108_8_10
 
 # benchmark (rc2-* needs no download; maxcdcl from --bench above)
 python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10 \
-  --solvers rc2-glucose42 maxcdcl evalmaxsat
+  --solvers rc2-glucose42 maxcdcl evalmaxsat distqldpc
+# distqldpc: two runs per stem (-no-card, -card-mto); parses c d_lb / c d_ub (needs Gx/Gz)
 ```
 
 Use `python3` (not bare `python`) on Debian unless you installed `python-is-python3`. Inside an active venv, `python` also works after `pip install` succeeds.
 
 On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Dockerfile.bench](Dockerfile.bench).
 
-## External MaxSAT solvers (optional)
+## Benchmark dependencies (optional)
 
-Only needed if you pass external names to `--solvers` (e.g. `maxcdcl`, `evalmaxsat`). **PySAT backends** (`rc2-glucose42`, `rc2-g3`, …) work after `pip install` alone.
-
-**Linux x86_64** — `--bench` downloads all MSE zip solvers, builds [Open-WBO](bin/maxsat/README.md), and clones/builds [DistQLDPC](https://github.com/guluchen/DistQLDPC) into `vendor/DistQLDPC` (symlink `bin/distqldpc`). Missing apt packages (`libgmp-dev`, `g++`, `zlib1g-dev`) are installed automatically when possible:
+**PySAT** SAT/RC2 solvers work after `pip install -e ".[dev]"` only. For the **full default benchmark** (including `z3py`, `cvc5`, external MaxSAT, and [DistQLDPC](https://github.com/guluchen/DistQLDPC)):
 
 ```bash
-python3 scripts/download_maxsat_solvers.py --bench
-python3 scripts/download_maxsat_solvers.py --list   # optional: verify status (OK = ready)
+python3 scripts/install_benchmark_deps.py
+python3 scripts/install_benchmark_deps.py --list
 ```
 
-Use `--no-install-deps` to skip auto apt/brew. On macOS, `--bench` may run `brew install gmp` (MSE zips still need Linux to run).
+This installs:
+
+| Component | How |
+|-----------|-----|
+| `z3py`, `cvc5` | `pip install cvc5 z3-solver` (via `install_benchmark_deps.py`; `z3-solver` needs a wheel for your Python version) |
+| `maxcdcl`, `evalmaxsat`, `cashw-*`, … | MSE zip download (Linux x86_64 only) |
+| `open-wbo` | compiled locally (`libgmp-dev` / `brew install gmp`) |
+| `distqldpc` | clone + `make` → `bin/distqldpc` (`no-card`, `card-mto`) |
+
+On **macOS**, MSE `linux_elf` binaries install but are **skipped at run time**; `open-wbo` and DistQLDPC still work. System packages (Debian): `git make g++ zlib1g-dev libgmp-dev` — the download script can install GMP/zlib via apt/brew when missing.
+
+Fine-grained installs:
 
 | You want | Command |
 |----------|---------|
-| All external binaries (MSE zips + `open-wbo` + DistQLDPC) | `--bench` |
-| MSE zips only (no Open-WBO / DistQLDPC) | `python3 scripts/download_maxsat_solvers.py` (no flags) |
+| Everything (recommended) | `python3 scripts/install_benchmark_deps.py` |
+| SMT only | `pip install -e ".[benchmark]"` or `pip install z3-solver cvc5` |
+| MaxSAT + DistQLDPC only | `python3 scripts/download_maxsat_solvers.py --bench` |
+| One MaxSAT solver | `python3 scripts/download_maxsat_solvers.py --only maxcdcl` |
 | DistQLDPC only | `python3 scripts/install_distqldpc.py` |
-| One MaxSAT solver | `--only maxcdcl` |
-| Build only Open-WBO | `--build open-wbo` |
-| Skip DistQLDPC in `--bench` | `--bench --no-distqldpc` |
 
 Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 
@@ -92,7 +102,8 @@ Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 |---------|---------|
 | `precompute-logicals STEM` | Write `Gx` / `Gz` from `Hx` / `Hz` |
 | `python3 benchmarks/benchmark_solver_performance.py …` | Multi-solver distance benchmark |
-| `python3 scripts/download_maxsat_solvers.py --bench` | Install default external MaxSAT binaries |
+| `python3 scripts/install_benchmark_deps.py` | Install SMT pip extras + MaxSAT + DistQLDPC |
+| `python3 scripts/download_maxsat_solvers.py --bench` | MaxSAT + DistQLDPC only |
 | `./scripts/run_benchmark_stems_dir.sh data/matrices` | Batch runs + log |
 
 ```bash
@@ -115,7 +126,7 @@ QDistSAT/
 ├── data/matrices/             # Benchmark matrices (see NOTICE)
 ├── benchmarks/
 │   └── benchmark_solver_performance.py
-├── scripts/                   # MaxSAT download, LaTeX, batch shell
+├── scripts/                   # install_benchmark_deps, MaxSAT download, LaTeX
 ├── tests/
 ├── bin/maxsat/                # manifest + README (binaries gitignored)
 ├── LICENSE                    # GPL-3.0-or-later
