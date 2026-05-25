@@ -49,5 +49,5 @@ MSE zips are **Linux x86-64 ELF**. On macOS they install but benchmarks skip the
 ```bash
 python3 benchmarks/benchmark_solver_performance.py --list-solvers
 python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10 \
-  --solvers rc2-glucose42 maxcdcl evalmaxsat
+  --solvers rc2-glucose42 maxcdcl distqldpc
 ```

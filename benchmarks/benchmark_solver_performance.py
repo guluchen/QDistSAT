@@ -13,7 +13,7 @@ Usage:
   python benchmarks/benchmark_solver_performance.py --timeout 300   # override per-config limit
   # Default: 180s (3 min) wall-clock timeout per configuration
   python benchmarks/benchmark_solver_performance.py --quick   # SC_9_1_3, d=3
-  python benchmarks/benchmark_solver_performance.py --stem SC_9_1_3 -d 3 --solvers rc2-g3 evalmaxsat open-wbo
+  python benchmarks/benchmark_solver_performance.py --stem SC_9_1_3 -d 3 --solvers rc2-g3 maxcdcl distqldpc
   python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6
   python benchmarks/benchmark_solver_performance.py --stem BB_144_12_12 -d 12
   python benchmarks/benchmark_solver_performance.py --stems BB_72_12_6 BB_90_8_10

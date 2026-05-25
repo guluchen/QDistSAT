@@ -50,9 +50,9 @@ python3 scripts/install_benchmark_deps.py --list   # distqldpc / maxcdcl should 
 # logical bases (if Gx/Gz missing; requires pip install above)
 precompute-logicals BB_108_8_10
 
-# benchmark (rc2-* needs no download; maxcdcl from --bench above)
+# benchmark (rc2-* needs no download; maxcdcl / distqldpc from --bench above; skip evalmaxsat — slow)
 python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10 \
-  --solvers rc2-glucose42 maxcdcl evalmaxsat distqldpc
+  --solvers rc2-glucose42 maxcdcl distqldpc
 # distqldpc: two runs per stem (-no-card, -card-mto); parses c d_lb / c d_ub (needs Gx/Gz)
 ```
 
