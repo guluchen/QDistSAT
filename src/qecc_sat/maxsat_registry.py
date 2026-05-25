@@ -133,10 +133,14 @@ def platform_mismatch_message(exe: Path) -> Optional[str]:
 
 def not_installed_status(spec: MaxSATBinarySpec) -> str:
     if spec.id == "open-wbo":
-        return "not installed (--build open-wbo)"
+        return "not installed (run: python3 scripts/download_maxsat_solvers.py --build open-wbo)"
+    if spec.zip_url and spec.linux_elf:
+        if spec.id in ("maxcdcl", "evalmaxsat"):
+            return "not installed (run: python3 scripts/download_maxsat_solvers.py --bench)"
+        return "not installed (run: python3 scripts/download_maxsat_solvers.py)"
     if spec.zip_url is None and spec.git_url is None:
         return f"not installed (place binary at {spec.executable_path()})"
-    return f"not installed (--only {spec.id})"
+    return f"not installed (run: python3 scripts/download_maxsat_solvers.py --only {spec.id})"
 
 
 def assert_runnable(exe: Path) -> None:

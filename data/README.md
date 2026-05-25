@@ -23,7 +23,8 @@ Do not redistribute matrix subsets without retaining the notices above.
 ## Generate Gx / Gz
 
 ```bash
-pip install -e .
+python3 -m venv venv && source venv/bin/activate
+python3 -m pip install -e .
 precompute-logicals BB_108_8_10
 ```
 

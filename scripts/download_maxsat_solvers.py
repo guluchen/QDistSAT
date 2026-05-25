@@ -3,9 +3,10 @@
 Download / build MaxSAT binaries into bin/maxsat/<id>/ (see bin/maxsat/manifest.json).
 
 Examples:
-  python scripts/download_maxsat_solvers.py --list
-  python scripts/download_maxsat_solvers.py --only cashw-coreplus
-  python scripts/download_maxsat_solvers.py --build open-wbo
+  python3 scripts/download_maxsat_solvers.py --bench   # recommended: maxcdcl + evalmaxsat
+  python3 scripts/download_maxsat_solvers.py --list    # check what is installed
+  python3 scripts/download_maxsat_solvers.py             # all MSE zip solvers
+  python3 scripts/download_maxsat_solvers.py --build open-wbo
 """
 
 from __future__ import annotations
@@ -28,8 +29,12 @@ from qecc_sat.maxsat_registry import (  # noqa: E402
     host_supports_linux_elf,
     list_status,
     load_manifest,
+    maxsat_runnable_on_host,
     maxsat_root,
 )
+
+# Matches README quick-start benchmark (--solvers rc2-glucose42 maxcdcl …).
+BENCH_ZIP_IDS = ("maxcdcl", "evalmaxsat")
 
 
 def _download_zip(spec: MaxSATBinarySpec, install_dir: Path) -> None:
@@ -133,52 +138,100 @@ def _build_git(spec: MaxSATBinarySpec, install_dir: Path) -> None:
     print(f"# OK: {install_exe}", flush=True)
 
 
+def _print_status(root: Path) -> None:
+    for row in list_status(root):
+        if row["runnable"]:
+            mark = "OK"
+        elif row.get("skipped_host"):
+            mark = "skip"
+        elif row["installed"]:
+            mark = "installed"
+        else:
+            mark = "missing"
+        print(f"{row['id']:<22} {mark:<10} {row['solver_type']}")
+        print(f"  {row['title']}")
+        print(f"  {row['path']}")
+        if row.get("error") and not row["runnable"] and not row.get("skipped_host"):
+            print(f"  ! {row['error']}")
+    if not host_supports_linux_elf():
+        print(
+            "# MSE zip solvers (linux_elf) install on any host but run only on Linux x86_64.",
+            flush=True,
+        )
+
+
+def _print_post_install_hints(root: Path) -> None:
+    runnable = [r["id"] for r in list_status(root) if r["runnable"]]
+    if runnable:
+        print(f"# Runnable: {', '.join(runnable)}", flush=True)
+    if not maxsat_runnable_on_host("glucose_release", root=root):
+        print(
+            "# Optional: place a glucose_release binary at",
+            maxsat_root(root) / "glucose_release",
+            flush=True,
+        )
+    print("# Status: python3 scripts/download_maxsat_solvers.py --list", flush=True)
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Install MaxSAT binaries under bin/maxsat/")
+    parser = argparse.ArgumentParser(
+        description="Install external MaxSAT binaries under bin/maxsat/",
+        epilog=(
+            "Quick path (Linux x86_64): python3 scripts/download_maxsat_solvers.py --bench\n"
+            "PySAT solvers (rc2-glucose42, …) need no download."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--bench",
+        action="store_true",
+        help=f"Install benchmark defaults: {', '.join(BENCH_ZIP_IDS)} (skip if already OK)",
+    )
     parser.add_argument("--only", nargs="*", metavar="ID", help="Manifest ids (zip download)")
     parser.add_argument("--build", nargs="*", metavar="ID", help="Build from git")
-    parser.add_argument("--list", action="store_true", help="Show status")
+    parser.add_argument("--list", action="store_true", help="Show install status")
     parser.add_argument("--force", action="store_true", help="Remove install dir first")
     parser.add_argument("--dest", type=Path, default=None, help="Override maxsat root")
     args = parser.parse_args()
     root = maxsat_root(args.dest)
 
     if args.list:
-        for row in list_status(root):
-            if row["runnable"]:
-                mark = "OK"
-            elif row.get("skipped_host"):
-                mark = "skip"
-            elif row["installed"]:
-                mark = "installed"
-            else:
-                mark = "missing"
-            print(f"{row['id']:<22} {mark:<10} {row['solver_type']}")
-            print(f"  {row['title']}")
-            print(f"  {row['path']}")
-            if row.get("error") and not row["runnable"] and not row.get("skipped_host"):
-                print(f"  ! {row['error']}")
-        if not host_supports_linux_elf():
-            print(
-                "# MSE zip solvers (linux_elf) install on any host but run only on Linux x86_64.",
-                flush=True,
-            )
+        _print_status(root)
         return
+
+    if args.bench and args.only:
+        raise SystemExit("Use either --bench or --only, not both.")
 
     specs = {s.id: s for s in load_manifest()}
     to_zip = args.only
-    if to_zip is None and not args.build:
+    if args.bench:
+        to_zip = list(BENCH_ZIP_IDS)
+    elif to_zip is None and not args.build:
         # MSE prebuilt zips (CASHW, EvalMaxSAT, MaxCDCL, …)
         to_zip = [s.id for s in specs.values() if s.zip_url and s.linux_elf]
+
+    if to_zip and not host_supports_linux_elf():
+        print(
+            "# Skipping MSE zip download: need Linux x86_64 to run these binaries.",
+            flush=True,
+        )
+        print("# PySAT solvers (rc2-glucose42, …) still work without external MaxSAT.", flush=True)
+        to_zip = []
 
     for sid in to_zip or []:
         if sid not in specs:
             raise SystemExit(f"Unknown id {sid!r}")
         spec = specs[sid]
+        if maxsat_runnable_on_host(spec.solver_type, root=root) and not args.force:
+            print(f"# Already OK: {spec.id} ({spec.executable_path(root)})", flush=True)
+            continue
         install_dir = root / spec.id
         if install_dir.exists() and args.force:
             shutil.rmtree(install_dir)
         _download_zip(spec, install_dir)
+
+    if to_zip or args.build:
+        _print_post_install_hints(root)
 
     for sid in args.build or []:
         if sid not in specs:

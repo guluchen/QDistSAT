@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "comment": "Third-party MaxSAT binaries live under bin/maxsat/<id>/ (gitignored). Run: python scripts/download_maxsat_solvers.py",
+  "comment": "Third-party MaxSAT binaries live under bin/maxsat/<id>/ (gitignored). Run: python3 scripts/download_maxsat_solvers.py --bench",
   "solvers": [
     {
       "id": "cashw-coreplus",

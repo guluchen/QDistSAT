@@ -9,24 +9,74 @@ Matrix file layout and attribution: see [NOTICE](NOTICE).
 
 ## Quick start
 
+Clone with **HTTPS** or **SSH** (pick one):
+
 ```bash
+# HTTPS — works everywhere; GitHub may prompt for a personal access token
 git clone https://github.com/guluchen/QDistSAT.git
-cd QDistSAT
-python3 -m venv venv && source venv/bin/activate
-pip install -e ".[dev]"
 
-# optional: external MaxSAT (Linux x86_64)
-python scripts/download_maxsat_solvers.py --list
-
-# logical bases (if Gx/Gz missing)
-precompute-logicals BB_108_8_10
-
-# benchmark
-python benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10 \
-  --solvers rc2-glucose42 glucose_release maxcdcl
+# SSH — if you use GitHub SSH keys (no username/password prompt)
+git clone git@github.com:guluchen/QDistSAT.git
 ```
 
+### Linux (Debian / Ubuntu)
+
+Minimal Python on Debian often lacks `venv` and blocks system-wide `pip` (PEP 668). Install once:
+
+```bash
+sudo apt install -y python3-venv python3-pip
+# if `python3 -m venv` still fails, match your version, e.g.:
+# sudo apt install -y python3.12-venv
+```
+
+### Install and run
+
+```bash
+cd QDistSAT
+
+# if a previous `venv` creation failed, remove it first:
+# rm -rf venv
+
+python3 -m venv venv
+source venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -e ".[dev]"
+
+# optional: external MaxSAT on Linux x86_64 (see below)
+python3 scripts/download_maxsat_solvers.py --bench
+
+# logical bases (if Gx/Gz missing; requires pip install above)
+precompute-logicals BB_108_8_10
+
+# benchmark (rc2-* needs no download; maxcdcl from --bench above)
+python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10 \
+  --solvers rc2-glucose42 maxcdcl evalmaxsat
+```
+
+Use `python3` (not bare `python`) on Debian unless you installed `python-is-python3`. Inside an active venv, `python` also works after `pip install` succeeds.
+
 On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Dockerfile.bench](Dockerfile.bench).
+
+## External MaxSAT solvers (optional)
+
+Only needed if you pass external names to `--solvers` (e.g. `maxcdcl`, `evalmaxsat`). **PySAT backends** (`rc2-glucose42`, `rc2-g3`, …) work after `pip install` alone.
+
+**Linux x86_64** — one command (downloads `maxcdcl` + `evalmaxsat`; skips if already installed):
+
+```bash
+python3 scripts/download_maxsat_solvers.py --bench
+python3 scripts/download_maxsat_solvers.py --list   # optional: verify status (OK = ready)
+```
+
+| You want | Command |
+|----------|---------|
+| Default benchmark binaries | `--bench` |
+| All MSE zip solvers | `python3 scripts/download_maxsat_solvers.py` (no flags) |
+| One solver | `--only maxcdcl` |
+| Open-WBO (compile) | `--build open-wbo` (needs `git`, `make`, `libgmp-dev`) |
+| `glucose_release` | Copy binary to `bin/maxsat/glucose_release` (no auto-download) |
+
+Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 
 ## Input data
 
@@ -37,13 +87,13 @@ On macOS, MSE `linux_elf` solvers (e.g. `maxcdcl`) are skipped; use Linux or [Do
 | Command | Purpose |
 |---------|---------|
 | `precompute-logicals STEM` | Write `Gx` / `Gz` from `Hx` / `Hz` |
-| `python benchmarks/benchmark_solver_performance.py …` | Multi-solver distance benchmark |
-| `python scripts/download_maxsat_solvers.py` | Install MaxSAT binaries under `bin/maxsat/` |
+| `python3 benchmarks/benchmark_solver_performance.py …` | Multi-solver distance benchmark |
+| `python3 scripts/download_maxsat_solvers.py --bench` | Install default external MaxSAT binaries |
 | `./scripts/run_benchmark_stems_dir.sh data/matrices` | Batch runs + log |
 
 ```bash
-python benchmarks/benchmark_solver_performance.py --list-solvers
-python scripts/parse_benchmark_log_to_latex.py logs/your_run.log
+python3 benchmarks/benchmark_solver_performance.py --list-solvers
+python3 scripts/parse_benchmark_log_to_latex.py logs/your_run.log
 ```
 
 ## Repository layout
@@ -72,8 +122,9 @@ QDistSAT/
 ## Development
 
 ```bash
-pip install -e ".[dev]"
-python -m pytest tests/ -q
+source venv/bin/activate   # after python3 -m venv venv
+python3 -m pip install -e ".[dev]"
+python3 -m pytest tests/ -q
 ```
 
 See [docs/PUBLISHING.md](docs/PUBLISHING.md) and [docs/REPO_SCOPE.md](docs/REPO_SCOPE.md).
