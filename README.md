@@ -107,7 +107,7 @@ python3 benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6 \
 **GurobiDist** needs a Gurobi license; **magmaMinWord** needs the `magma` binary on `PATH`, or:
 
 ```bash
-export MAGMA_HOME=/home/yfc/distanceLibTest   # directory containing magma executable
+export MAGMA_HOME=/home/path/to/magma   # directory containing magma executable
 # or: export QEECC_SAT_MAGMA=/full/path/to/magma
 ```
 
