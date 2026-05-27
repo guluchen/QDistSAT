@@ -1,4 +1,4 @@
-"""MaxSAT (RC2) distance on TN_36_8_4 (matrices from data/matrices/)."""
+"""MaxSAT (RC2) distance on TN_36_8_4 (matrices from data/QT/)."""
 
 import pytest
 

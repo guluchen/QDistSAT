@@ -33,11 +33,12 @@ python3 -m pip install -e .
 precompute-logicals BB_108_8_10
 ```
 
-Default directory: `data/matrices` (`--benchmark-dir` to override).
+Default root: `data/` (`--benchmark-dir` or `--stems-dir`; subdirs `BB`, `LP`, `QT`, …).
 
 ## Six experiment batches (`BB`, `BB2`, `QT`, `QT2`, `LP`, `LP2`)
 
-Matrices for batch runs live under `data/BB`, `data/BB2`, … (each folder is a `--stems-dir`).
+Matrices live under `data/BB`, `data/BB2`, `data/LP`, `data/LP2`, `data/QT`, `data/QT2`.
+Use `--stems-dir data` to benchmark all stems in those folders (recursive search).
 
 Run all six in parallel (default 60s per config, all default solvers, one log per folder):
 

@@ -82,7 +82,8 @@ ENCODING_DISPLAY: dict[str, str] = {
     "totalizer": "Totalizer",
     "native": "Native Cardinality",
     "maxsat": "MaxSAT",
-    "log": "Log",
+    "binary": "Binary",
+    "log": "Binary",  # legacy benchmark logs
 }
 
 

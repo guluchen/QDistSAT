@@ -45,10 +45,10 @@ python3 -m pip install -e ".[dev]"
 # full benchmark stack (must run inside venv — uses venv/bin/python3, not /usr/bin/python3)
 python3 scripts/install_benchmark_deps.py
 python3 scripts/install_benchmark_deps.py --list   # distqldpc, maxcdcl, codedistance, dist_m4ri
-# ./bin/distqldpc data/matrices/BB_108_8_10   # smoke test
+# ./bin/distqldpc data/BB/BB_108_8_10   # smoke test
 
 # logical bases (if Gx/Gz missing; requires pip install above)
-precompute-logicals BB_108_8_10
+precompute-logicals BB_108_8_10 --benchmark-dir data
 
 # benchmark default: all PySAT backends + distqldpc + codedistance (cd-* ×4)
 python3 benchmarks/benchmark_solver_performance.py --stem BB_108_8_10 -d 10
@@ -115,7 +115,8 @@ Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 
 ## Input data
 
-`data/matrices/{STEM}_Hx.txt`, `_Hz.txt`, `_Gx.txt`, `_Gz.txt` — see [data/README.md](data/README.md) and [NOTICE](NOTICE).
+`data/{batch}/{STEM}_Hx.txt`, `_Hz.txt`, `_Gx.txt`, `_Gz.txt` (batches `BB`, `BB2`,
+`LP`, `LP2`, `QT`, `QT2`) — see [data/README.md](data/README.md) and [NOTICE](NOTICE).
 
 ## Main commands
 
@@ -125,7 +126,8 @@ Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 | `python3 benchmarks/benchmark_solver_performance.py …` | Multi-solver distance benchmark |
 | `python3 scripts/install_benchmark_deps.py` | Install SMT + MaxSAT + DistQLDPC + codeDistance + dist-m4ri |
 | `python3 scripts/download_maxsat_solvers.py --bench` | MaxSAT + DistQLDPC only |
-| `./scripts/run_benchmark_stems_dir.sh data/matrices` | Batch runs + log |
+| `./scripts/run_benchmark_stems_dir.sh data` | All batch subdirs + log |
+| `./scripts/run_benchmark_stems_dir.sh data/BB` | One batch folder + log |
 
 ```bash
 python3 benchmarks/benchmark_solver_performance.py --list-solvers
@@ -144,7 +146,7 @@ QDistSAT/
 │   ├── io.py                  # Matrix I/O
 │   ├── literature_distances.py
 │   └── cli/precompute_logical_bases.py
-├── data/matrices/             # Benchmark matrices (see NOTICE)
+├── data/                      # Benchmark matrices by batch (BB, LP, QT, …; see NOTICE)
 ├── benchmarks/
 │   └── benchmark_solver_performance.py
 ├── scripts/                   # install_benchmark_deps, MaxSAT download, LaTeX

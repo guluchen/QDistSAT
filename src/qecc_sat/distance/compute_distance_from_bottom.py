@@ -321,7 +321,7 @@ def min_distance_quantum_stabilizer_or_logicals(
     all logical operators in one SAT instance: P ∉ S ⟺ (⟨P,L₁⟩=1) ∨ (⟨P,L₂⟩=1) ∨ ... ∨ (⟨P,Lₖ⟩=1).
 
     ``cardinality_encoding``: ``\"standard\"`` uses native/CardEnc atmost on w_i;
-    ``\"log\"`` uses logarithmic selector slots (see ``log_encoding``).
+    ``\"binary\"`` (alias ``\"log\"``) uses logarithmic binary-selector slots (see ``log_encoding``).
     Uses auxiliary variables a_j with XOR(lits_Lj, a_j)=0 (so a_j ⟺ ⟨P,Lj⟩=1) and clause (a₁∨a₂∨...∨aₖ).
 
     If ``per_k_records`` is a list, append one dict per weight trial ``k`` with keys
@@ -370,10 +370,10 @@ def min_distance_quantum_stabilizer_or_logicals(
         return None
 
     if is_maxsat_solver(solver_type):
-        if cardinality_encoding == "log":
+        if cardinality_encoding in ("binary", "log"):
             raise ValueError(
                 "MaxSAT distance search minimizes sum(w_i) directly; "
-                "cardinality_encoding='log' does not apply to rc2-* solvers."
+                "cardinality_encoding='binary' does not apply to rc2-* solvers."
             )
         if per_k_records is not None:
             raise ValueError("per_k_records is not supported for MaxSAT (rc2-*) solvers.")
@@ -487,8 +487,8 @@ def min_distance_quantum_stabilizer_or_logicals(
             cardinality_encoding=cardinality_encoding,
         )
         if show_formula:
-            if cardinality_encoding == "log":
-                print(f"    Σw_i ≤ k:  log selector encoding  # {c_card} clauses")
+            if cardinality_encoding in ("binary", "log"):
+                print(f"    Σw_i ≤ k:  binary selector encoding  # {c_card} clauses")
             elif c_card == 0:
                 print(f"    Σw_i ≤ k:  native add_atmost")
             else:

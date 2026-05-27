@@ -2,7 +2,7 @@
 """
 Benchmark SAT solver performance on a CSS code from parity-check matrices.
 
-Default instance: BB_72_12_6 (data/matrices/BB_72_12_6_Hx.txt, _Hz.txt).
+Default instance: BB_72_12_6 (data/BB/BB_72_12_6_Hx.txt, _Hz.txt).
 
 Tests each solver and cardinality encoding; reports time, vars, clauses.
 MaxSAT backends (``rc2-*``, ``open-wbo``, …) use one optimization pass
@@ -18,8 +18,8 @@ Usage:
   python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6
   python benchmarks/benchmark_solver_performance.py --stem BB_144_12_12 -d 12
   python benchmarks/benchmark_solver_performance.py --stems BB_72_12_6 BB_90_8_10
-  python benchmarks/benchmark_solver_performance.py --stems-dir data/matrices
-  python benchmarks/benchmark_solver_performance.py --encodings seqcounter log
+  python benchmarks/benchmark_solver_performance.py --stems-dir data
+  python benchmarks/benchmark_solver_performance.py --encodings seqcounter binary
   python benchmarks/benchmark_solver_performance.py -j 4              # 4 parallel configs
   python benchmarks/benchmark_solver_performance.py --auto-jobs       # ~half of idle CPUs (default)
   python benchmarks/benchmark_solver_performance.py --jobs 1          # sequential
@@ -43,7 +43,13 @@ from typing import Any, Iterable, List, Optional
 from pysat.card import EncType
 from qecc_sat import DEFAULT_MATRIX_DIR
 from qecc_sat.literature_distances import LITERATURE_BB_DISTANCES
-from qecc_sat.io import build_s_from_hx_hz, load_matrix, resolve_precomputed_logical_basis
+from qecc_sat.io import (
+    build_s_from_hx_hz,
+    discover_css_matrix_stems,
+    load_matrix,
+    resolve_matrix_dir_for_stem,
+    resolve_precomputed_logical_basis,
+)
 from qecc_sat.codedistance_runner import (
     CODEDISTANCE_BENCH_CONFIGS,
     CODEDISTANCE_SOLVER,
@@ -220,6 +226,17 @@ ENC_MAP = {
     "mtotalizer": EncType.mtotalizer,
     "totalizer": EncType.totalizer,
 }
+
+
+def _is_binary_cardinality(method: str) -> bool:
+    """Logarithmic (binary selector) at-most-k encoding; ``log`` is a legacy alias."""
+    return method in ("binary", "log")
+
+
+def _normalize_encoding_name(name: str) -> str:
+    if name == "log":
+        return "binary"
+    return name
 
 _CNF_CLAUSE_STAT_KEYS = (
     "clauses_p_nonzero",
@@ -570,9 +587,11 @@ def _collect_benchmark_jobs(
             )
             continue
         for enc_name in encodings_to_test:
-            if enc_name == "log":
+            if _is_binary_cardinality(enc_name):
                 jobs.append(
-                    _BenchmarkJob(sname.lower(), "seqcounter", "log", "log")
+                    _BenchmarkJob(
+                        sname.lower(), "seqcounter", "binary", "binary"
+                    )
                 )
                 continue
             if enc_name not in ENC_MAP:
@@ -883,24 +902,34 @@ def _resolve_stem_targets(args: argparse.Namespace) -> list[tuple[str, Path, int
         d = Path(args.stems_dir)
         if not d.is_dir():
             raise SystemExit(f"--stems-dir is not a directory: {d}")
-        suffix = "_Hx.txt"
-        found = sorted(
-            {
-                p.name[: -len(suffix)]
-                for p in d.glob(f"*{suffix}")
-                if (d / f"{p.name[: -len(suffix)]}_Hz.txt").is_file()
-            }
-        )
-        if not found:
+        try:
+            pairs = discover_css_matrix_stems(d, recursive=True)
+        except ValueError as e:
+            raise SystemExit(str(e)) from e
+        if not pairs:
             raise SystemExit(
-                f"No matching *_Hx.txt + *_Hz.txt pairs in {d}"
+                f"No matching *_Hx.txt + *_Hz.txt pairs under {d} "
+                "(searched recursively)"
             )
-        pairs = [(name, d) for name in found]
     elif args.stems:
         md = Path(args.benchmark_dir)
-        pairs = [(s, md) for s in args.stems]
+        pairs = []
+        for s in args.stems:
+            try:
+                pairs.append((s, resolve_matrix_dir_for_stem(md, s)))
+            except FileNotFoundError as e:
+                raise SystemExit(str(e)) from e
+            except ValueError as e:
+                raise SystemExit(str(e)) from e
     else:
-        pairs = [(args.stem, Path(args.benchmark_dir))]
+        md = Path(args.benchmark_dir)
+        try:
+            stem_dir = resolve_matrix_dir_for_stem(md, args.stem)
+        except FileNotFoundError as e:
+            raise SystemExit(str(e)) from e
+        except ValueError as e:
+            raise SystemExit(str(e)) from e
+        pairs = [(args.stem, stem_dir)]
 
     targets: list[tuple[str, Path, int]] = []
     seen: set[str] = set()
@@ -989,7 +1018,9 @@ def _benchmark_worker(
                 max_distance=max_distance,
                 encoding=encoding,
                 stats=stats,
-                cardinality_encoding="log" if cardinality_method == "log" else "standard",
+                cardinality_encoding=(
+                    "binary" if _is_binary_cardinality(cardinality_method) else "standard"
+                ),
                 logical_basis_override=logical_basis_override,
                 progress_q=progress_q,
                 timeout_sec=timeout_sec,
@@ -1243,7 +1274,7 @@ def _run_one_with_isolated_timeout(
         encoding_name = "seqcounter"
     elif use_css_split:
         encoding_name = next((k for k, v in ENC_MAP.items() if v == encoding), "seqcounter")
-    elif cardinality_method == "log":
+    elif _is_binary_cardinality(cardinality_method):
         encoding_name = "seqcounter"
     elif encoding:
         encoding_name = next((k for k, v in ENC_MAP.items() if v == encoding), "?")
@@ -1316,9 +1347,9 @@ def _run_one_with_isolated_timeout(
         )
         enc = ENC_MAP.get(encoding_name, EncType.seqcounter)
         result["encoding"] = next((k for k, v in ENC_MAP.items() if v == enc), encoding_name)
-    elif cardinality_method == "log":
-        result["cardinality"] = "log"
-        result["encoding"] = "log"
+    elif _is_binary_cardinality(cardinality_method):
+        result["cardinality"] = "binary"
+        result["encoding"] = "binary"
     elif encoding:
         use_native_card = solver_type in NATIVE_ONLY_CARD_SOLVERS
         result["encoding"] = "native" if use_native_card else encoding_name
@@ -1355,8 +1386,8 @@ def _run_one_direct(
             enable_dynamic_deficit=enable_dynamic_deficit,
         )
         encoding_name = next((k for k, v in ENC_MAP.items() if v == encoding), "seqcounter")
-    elif cardinality_method == "log":
-        card_label = "log"
+    elif _is_binary_cardinality(cardinality_method):
+        card_label = "binary"
         encoding_name = "seqcounter"
     elif encoding:
         use_native_card = solver_type in NATIVE_ONLY_CARD_SOLVERS
@@ -1407,7 +1438,9 @@ def _run_one_direct(
                 solver_type=solver_type,
                 stats=stats,
                 encoding=ENC_MAP.get(encoding_name, EncType.seqcounter),
-                cardinality_encoding="log" if cardinality_method == "log" else "standard",
+                cardinality_encoding=(
+                    "binary" if _is_binary_cardinality(cardinality_method) else "standard"
+                ),
                 logical_basis_override=logical_basis_override,
                 timeout_sec=timeout_sec,
             )
@@ -1856,7 +1889,7 @@ def _print_result_row(r: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=f"Benchmark SAT solvers (default: {DEFAULT_STEM} from data/matrices)"
+        description=f"Benchmark SAT solvers (default: {DEFAULT_STEM} under data/)"
     )
     parser.add_argument(
         "--stem",
@@ -1877,15 +1910,15 @@ def main() -> None:
         type=Path,
         default=None,
         metavar="DIR",
-        help="Run benchmark for every {STEM}_Hx.txt with matching _Hz.txt in DIR. "
-        "DIR is also used as the matrix dir for those runs.",
+        help="Run every stem with matching _Hx/_Hz under DIR (searches subdirectories). "
+        "Example: --stems-dir data runs BB/, BB2/, LP/, QT/, …",
     )
     parser.add_argument(
         "--benchmark-dir",
         type=Path,
         default=DEFAULT_MATRIX_DIR,
         metavar="DIR",
-        help="Directory with parity-check matrices (default: data/matrices)",
+        help="Root to resolve --stem / --stems (searches subdirs; default: data/)",
     )
     parser.add_argument(
         "-d",
@@ -1926,16 +1959,16 @@ def main() -> None:
         "--encodings",
         nargs="*",
         default=None,
-        help="Encodings: seqcounter, kmtotalizer, mtotalizer, totalizer, log "
-        f"(default: {','.join(DEFAULT_ENCODINGS)})",
+        help="Encodings: seqcounter, kmtotalizer, mtotalizer, totalizer, binary "
+        f"(default: {','.join(DEFAULT_ENCODINGS)}; 'log' accepted as alias)",
     )
     parser.add_argument(
         "--cardinality-methods",
         nargs="*",
         default=None,
-        choices=["standard", "log"],
+        choices=["standard", "binary", "log"],
         metavar="METHOD",
-        help="Deprecated: use --encodings log. If set, adds extra runs beyond --encodings.",
+        help="Deprecated: use --encodings binary. If set, adds extra runs beyond --encodings.",
     )
     parser.add_argument(
         "--quick",
@@ -2077,16 +2110,23 @@ def main() -> None:
             flush=True,
         )
         print(f"# {codedistance_pip_install_hint()}", file=sys.stderr, flush=True)
-    encodings_to_test = list(
-        dict.fromkeys(args.encodings or DEFAULT_ENCODINGS)
-    )
+    encodings_to_test = [
+        _normalize_encoding_name(e)
+        for e in dict.fromkeys(args.encodings or DEFAULT_ENCODINGS)
+    ]
     if args.cardinality_methods:
         for m in args.cardinality_methods:
-            if m == "log" and "log" not in encodings_to_test:
-                encodings_to_test.append("log")
-    if args.css_split and "log" in encodings_to_test:
-        encodings_to_test = [e for e in encodings_to_test if e != "log"]
-        print("# Skip --encodings log: CSS split Tanner pruning uses sector cardinality", flush=True)
+            norm = _normalize_encoding_name(m)
+            if _is_binary_cardinality(norm) and "binary" not in encodings_to_test:
+                encodings_to_test.append("binary")
+    if args.css_split and any(_is_binary_cardinality(e) for e in encodings_to_test):
+        encodings_to_test = [
+            e for e in encodings_to_test if not _is_binary_cardinality(e)
+        ]
+        print(
+            "# Skip --encodings binary: CSS split Tanner pruning uses sector cardinality",
+            flush=True,
+        )
 
     workers, workers_note = choose_parallel_workers(
         args.jobs, auto_jobs=args.auto_jobs

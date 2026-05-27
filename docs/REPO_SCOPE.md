@@ -1,7 +1,7 @@
 # QDistSAT — what is published
 
 This GitHub repository (**QDistSAT**) contains only what is needed to run
-`benchmarks/benchmark_solver_performance.py` on the shared `data/matrices/` corpus,
+`benchmarks/benchmark_solver_performance.py` on the shared `data/` batch corpus,
 plus `precompute-logicals` to build `Gx`/`Gz` files.
 
 Related project: [DistQLDPC](https://github.com/guluchen/DistQLDPC) (GPL-3.0-or-later,
@@ -21,7 +21,7 @@ MaxSAT reference implementation). Matrix layout and attribution match DistQLDPC;
 | `scripts/install_distqldpc.py` | DistQLDPC clone/build (`vendor/DistQLDPC`, `bin/distqldpc`) |
 | `scripts/parse_benchmark_log_to_latex.py` | Log → LaTeX |
 | `scripts/run_benchmark_stems_dir.sh` | Batch benchmark |
-| `data/matrices/` | Hx/Hz/Gx/Gz matrices; stems `{family}_{n}_{k}_{d}` ([data/README.md](../data/README.md), [NOTICE](../NOTICE)) |
+| `data/{BB,BB2,LP,LP2,QT,QT2}/` | Hx/Hz/Gx/Gz matrices; stems `{family}_{n}_{k}_{d}` ([data/README.md](../data/README.md), [NOTICE](../NOTICE)) |
 | `tests/` | Pytest (excluding gitignored tests) |
 | `LICENSE`, `NOTICE` | GPL-3.0-or-later + attributions |
 

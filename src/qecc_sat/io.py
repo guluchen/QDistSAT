@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 from typing import Optional
 
 from .qecc_distance import symplectic_from_css_nbit_rows
@@ -37,6 +38,66 @@ def stem_from_parity_hx_path(hx_path: str) -> str:
     if b.endswith("_Hx.txt"):
         return b[: -len("_Hx.txt")]
     return os.path.splitext(b)[0]
+
+
+def discover_css_matrix_stems(
+    root: Path | str,
+    *,
+    recursive: bool = True,
+) -> list[tuple[str, Path]]:
+    """
+    Find ``(stem, directory)`` pairs with matching ``{stem}_Hx.txt`` and ``{stem}_Hz.txt``.
+
+    When ``recursive`` is True (default), searches ``root`` and all subdirectories.
+    Otherwise only immediate children of ``root``.
+    """
+    root = Path(root)
+    if not root.is_dir():
+        raise NotADirectoryError(f"not a directory: {root}")
+
+    if recursive:
+        hx_paths = sorted(root.rglob("*_Hx.txt"))
+    else:
+        hx_paths = sorted(root.glob("*_Hx.txt"))
+
+    out: list[tuple[str, Path]] = []
+    seen: dict[str, Path] = {}
+    for hx in hx_paths:
+        stem = stem_from_parity_hx_path(str(hx))
+        hz = hx.parent / f"{stem}_Hz.txt"
+        if not hz.is_file():
+            continue
+        if stem in seen:
+            raise ValueError(
+                f"duplicate stem {stem!r} under {root}: "
+                f"{seen[stem]} and {hx.parent}"
+            )
+        seen[stem] = hx.parent
+        out.append((stem, hx.parent))
+    return sorted(out, key=lambda t: t[0])
+
+
+def resolve_matrix_dir_for_stem(root: Path | str, stem: str) -> Path:
+    """Directory containing ``{stem}_Hx.txt`` / ``{stem}_Hz.txt`` under ``root``."""
+    root = Path(root)
+    direct_hx = root / f"{stem}_Hx.txt"
+    if direct_hx.is_file() and (root / f"{stem}_Hz.txt").is_file():
+        return root
+    matches = [
+        p
+        for p in root.rglob(f"{stem}_Hx.txt")
+        if (p.parent / f"{stem}_Hz.txt").is_file()
+    ]
+    if len(matches) == 1:
+        return matches[0].parent
+    if len(matches) > 1:
+        parents = sorted({p.parent for p in matches})
+        raise ValueError(
+            f"stem {stem!r} found in multiple directories under {root}: {parents}"
+        )
+    raise FileNotFoundError(
+        f"no {{stem}}_Hx.txt + {{stem}}_Hz.txt under {root} for stem={stem!r}"
+    )
 
 
 def resolve_precomputed_logical_basis(

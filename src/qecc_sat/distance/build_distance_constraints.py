@@ -202,7 +202,7 @@ def _add_weight_atmost_k(
     """Add Σ w_i ≤ k. Returns clause count added (0 for native atmost)."""
     if k >= len(w_lits):
         return 0
-    if cardinality_encoding == "log":
+    if cardinality_encoding in ("binary", "log"):
         ncl, _aux = add_log_atmost_k(solver, w_lits, k, next_id_ref)
         return ncl
     if solver_type in NATIVE_ONLY_CARD_SOLVERS:

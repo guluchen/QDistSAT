@@ -16,12 +16,11 @@ If STEM is omitted, every ``*_Hx.txt`` in DIR is processed. If STEM is given, on
 from __future__ import annotations
 
 import argparse
-import glob
 import os
 import sys
 
 from qecc_sat import DEFAULT_MATRIX_DIR
-from qecc_sat.io import load_matrix
+from qecc_sat.io import discover_css_matrix_stems, load_matrix
 from qecc_sat.qecc_distance import css_logical_nbit_rows
 
 
@@ -96,7 +95,7 @@ def main() -> None:
         "--benchmark-dir",
         default=str(DEFAULT_MATRIX_DIR),
         metavar="DIR",
-        help="Directory containing matrices (default: data/matrices)",
+        help="Root directory for matrices (default: data/; recurses into subdirs)",
     )
     ap.add_argument(
         "--overwrite",
@@ -107,27 +106,34 @@ def main() -> None:
     d = os.path.normpath(args.benchmark_dir)
 
     if args.stem is not None:
-        hx_path = os.path.join(d, f"{args.stem}_Hx.txt")
-        hz_path = os.path.join(d, f"{args.stem}_Hz.txt")
-        if not os.path.isfile(hx_path):
-            print(f"Error: not found: {hx_path!r}", file=sys.stderr)
+        from qecc_sat.io import resolve_matrix_dir_for_stem
+
+        try:
+            stem_dir = resolve_matrix_dir_for_stem(d, args.stem)
+        except FileNotFoundError as e:
+            print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
-        if not os.path.isfile(hz_path):
-            print(f"Error: not found: {hz_path!r}", file=sys.stderr)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
+        hx_path = os.path.join(stem_dir, f"{args.stem}_Hx.txt")
+        hz_path = os.path.join(stem_dir, f"{args.stem}_Hz.txt")
         ok = precompute_one(hx_path, hz_path, overwrite=args.overwrite)
         print("Done: 1 code written." if ok else "Done: skipped or failed (see above).", flush=True)
         return
 
-    pattern = os.path.join(d, "*_Hx.txt")
-    hx_files = sorted(glob.glob(pattern))
-    if not hx_files:
-        print(f"No files matching {pattern}", file=sys.stderr)
+    try:
+        stem_dirs = discover_css_matrix_stems(d, recursive=True)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    if not stem_dirs:
+        print(f"No *_Hx.txt + *_Hz.txt pairs under {d!r}", file=sys.stderr)
         sys.exit(1)
     ok = 0
-    for hx_path in hx_files:
-        stem = _stem_from_hx_path(hx_path)
-        hz_path = os.path.join(os.path.dirname(hx_path), stem + "_Hz.txt")
+    for stem, stem_dir in stem_dirs:
+        hx_path = os.path.join(stem_dir, f"{stem}_Hx.txt")
+        hz_path = os.path.join(stem_dir, f"{stem}_Hz.txt")
         if not os.path.isfile(hz_path):
             print(f"# skip (no Hz): {hz_path}", file=sys.stderr)
             continue

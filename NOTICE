@@ -16,11 +16,14 @@ QDistSAT is a companion SAT/MaxSAT benchmark harness for quantum CSS code distan
 It shares benchmark matrices and licensing alignment with
 [DistQLDPC](https://github.com/guluchen/DistQLDPC).
 
-2. Benchmark matrices (`data/matrices/`)
-----------------------------------------
+2. Benchmark matrices (`data/`)
+-------------------------------
 
 Matrix files follow the DistQLDPC layout: `{stem}_Hx.txt`, `_Hz.txt`, `_Gx.txt`,
-`_Gz.txt` (GF(2), space-separated 0/1 rows).
+`_Gz.txt` (GF(2), space-separated 0/1 rows). In this repository they live under
+batch subdirectories of `data/` (e.g. `data/BB/`, `data/LP/`, `data/QT/`).
+Use `--stems-dir data` (recursive search) or a single batch folder such as
+`data/BB/`.
 
 **Stem naming in this repository:** `{family}_{n}_{k}_{d}` where `n` is code length,
 `k` is the number of logical qubits (from precomputed logical operators), and `d` is
@@ -39,11 +42,8 @@ Upstream example IDs are shown where this repository renamed files:
   LP_238_44_6 (AJ_07), LP_340_56_8 (AJ_10), LP_442_68_10 (AJ_13),
   LP_1768_224_? (AJ_52)
 - **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_? (xu_21)
-- **PK_*** — PK_31
-- **TN_*** — TN_36_8_3, TN_36_8_4, TN_72_8_8, TN_108_2_12, TN_144_2_13, TN_180_2_17,
-  TN_216_4_18, TN_252_2_21, TN_288_2_24, TN_324_4_25, TN_360_4_? (was TN_360_4_24),
-  TN_396_4_26, TN_432_8_33, TN_468_4_31, TN_496_2_32, TN_504_2_45, TN_540_4_40,
-  TN_576_2_57, TN_576_2_59, TN_612_2_52, TN_648_10_71, TN_648_14_50, TN_684_2_29
+- **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_?
 
 Redistribution of these files must retain the upstream MIT copyright and permission
 notice from the codeDistancePYPI repository.
@@ -62,8 +62,8 @@ TN_200_10_10 (was QT_200_10_10), TN_250_10_15 (was QT_250_10_15).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
-copy under `vendor/DistQLDPC/data/matrices/` is kept in sync with the same
-stem naming as `data/matrices/` in this repository.
+copy under `vendor/DistQLDPC/` may mirror the same stems; batch layout here is
+`data/{BB,BB2,LP,LP2,QT,QT2}/` with the same `{stem}_*` filenames.
 
 3. External MaxSAT binaries (`bin/maxsat/`)
 -------------------------------------------
