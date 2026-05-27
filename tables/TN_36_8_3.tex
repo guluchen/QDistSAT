@@ -1,0 +1,63 @@
+% Requires: \usepackage{booktabs, longtable}
+\begin{longtable}{llrrrl p{0.22\textwidth}}
+\caption{Benchmark solver results for \texttt{TN\_36\_8\_3} ($n=36$, scan $d \leq 20$, timeout 7200\,s per configuration).} \label{tab:bench-TN_36_8_3} \\
+\toprule
+Solver & Strategy & Time (s) & Vars & Clauses & Result & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\midrule
+\endfoot
+\bottomrule
+\endlastfoot
+z3py & seqcounter & 0.237 & 223 & 386 & 3 & \texttt{OK} \\
+z3py & kmtotalizer & 0.252 & 229 & 396 & 3 & \texttt{OK} \\
+cvc5 & seqcounter & 0.150 & 223 & 386 & 3 & \texttt{OK} \\
+cvc5 & kmtotalizer & 0.176 & 229 & 396 & 3 & \texttt{OK} \\
+minisat22 & seqcounter & 0.011 & 475 & 1346 & 3 & \texttt{OK} \\
+minisat22 & kmtotalizer & 0.010 & 481 & 1356 & 3 & \texttt{OK} \\
+glucose3 & seqcounter & 0.010 & 475 & 1346 & 3 & \texttt{OK} \\
+glucose3 & kmtotalizer & 0.010 & 481 & 1356 & 3 & \texttt{OK} \\
+glucose4 & seqcounter & 0.011 & 475 & 1346 & 3 & \texttt{OK} \\
+glucose4 & kmtotalizer & 0.010 & 481 & 1356 & 3 & \texttt{OK} \\
+glucose42 & seqcounter & 0.011 & 475 & 1346 & 3 & \texttt{OK} \\
+glucose42 & kmtotalizer & 0.010 & 481 & 1356 & 3 & \texttt{OK} \\
+cadical103 & seqcounter & 0.011 & 475 & 1346 & 3 & \texttt{OK} \\
+cadical103 & kmtotalizer & 0.011 & 481 & 1356 & 3 & \texttt{OK} \\
+cadical153 & seqcounter & 0.010 & 475 & 1346 & 3 & \texttt{OK} \\
+cadical153 & kmtotalizer & 0.013 & 481 & 1356 & 3 & \texttt{OK} \\
+cadical195 & seqcounter & 0.010 & 475 & 1346 & 3 & \texttt{OK} \\
+cadical195 & kmtotalizer & 0.015 & 481 & 1356 & 3 & \texttt{OK} \\
+lingeling & seqcounter & 0.023 & 475 & 1346 & 3 & \texttt{OK} \\
+lingeling & kmtotalizer & 0.034 & 481 & 1356 & 3 & \texttt{OK} \\
+maplesat & seqcounter & 0.010 & 475 & 1346 & 3 & \texttt{OK} \\
+maplesat & kmtotalizer & 0.009 & 481 & 1356 & 3 & \texttt{OK} \\
+mergesat3 & seqcounter & 0.012 & 475 & 1346 & 3 & \texttt{OK} \\
+mergesat3 & kmtotalizer & 0.012 & 481 & 1356 & 3 & \texttt{OK} \\
+minicard & native & 0.009 & 376 & 1119 & 3 & \texttt{OK} \\
+gluecard3 & native & 0.009 & 376 & 1119 & 3 & \texttt{OK} \\
+gluecard4 & native & 0.009 & 376 & 1119 & 3 & \texttt{OK} \\
+cryptosat & seqcounter & 0.007 & 223 & \textasciitilde{}338 & 3 & \texttt{OK} \\
+cryptosat & kmtotalizer & 0.008 & 229 & \textasciitilde{}348 & 3 & \texttt{OK} \\
+rc2-g3 & maxsat & 0.007 & 376 & 1166 & 3 & \texttt{OK} \\
+rc2-g4 & maxsat & 0.006 & 376 & 1166 & 3 & \texttt{OK} \\
+rc2-minisat22 & maxsat & 0.007 & 376 & 1166 & 3 & \texttt{OK} \\
+rc2-cadical195 & maxsat & 0.010 & 376 & 1166 & 3 & \texttt{OK} \\
+rc2-cryptosat & maxsat & 0.007 & 376 & 1166 & 3 & \texttt{OK} \\
+rc2-glucose42 & maxsat & 0.007 & 376 & 1166 & 3 & \texttt{OK} \\
+cashw-coreplus & maxsat & 0.032 & 376 & 1166 & 3 & \texttt{OK} \\
+cashw-coreplus-mse22 & maxsat & 0.027 & 376 & 1166 & 3 & \texttt{OK} \\
+evalmaxsat & maxsat & 1.803 & 376 & 1166 & 3 & \texttt{OK} \\
+maxcdcl & maxsat & 0.022 & 376 & 1166 & 3 & \texttt{OK} \\
+open-wbo & maxsat & 0.019 & 376 & 1166 & 3 & \texttt{OK} \\
+distqldpc & no-card & 0.014 & 376 & \textasciitilde{}926 & 3 & \texttt{OK} \\
+distqldpc & card-mto & 0.015 & 586 & \textasciitilde{}926 & 3 & \texttt{OK} \\
+cd-gurobi & GurobiDist & 14.997 & - & - & 3 & \texttt{OK} \\
+cd-mip-scip & MIPDist & 15.237 & - & - & 3 & \texttt{OK} \\
+cd-m4ri-cc & dist\_m4ri\_CC & 14.765 & - & - & 3 & \texttt{OK} \\
+cd-magma & magmaMinWord & 15.200 & - & - & 3 & \texttt{OK} \\
+\midrule
+\multicolumn{7}{l}{\textit{Completed: 46/46}} \\
+\multicolumn{7}{l}{\textit{Fastest: rc2-g4 (maxsat) in 0.006s}} \\
+\end{longtable}

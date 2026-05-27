@@ -180,7 +180,7 @@ def distqldpc_install_hint() -> str:
         "DistQLDPC binary not found. Build it from the repo root:\n"
         "  python3 scripts/install_distqldpc.py\n"
         "  python3 scripts/install_benchmark_deps.py --list   # should show distqldpc OK\n"
-        "  ./bin/distqldpc data/matrices/BB_108_8_10           # smoke test\n"
+        "  ./bin/distqldpc data/matrices/LP_34_20_2           # smoke test\n"
         "Debian/Ubuntu deps: sudo apt install -y g++ make zlib1g-dev git\n"
         f"Checked: {checked}"
     )

@@ -90,7 +90,7 @@ def main() -> None:
         nargs="?",
         default=None,
         metavar="STEM",
-        help="Benchmark name only (e.g. BB_144_14_0); omit to process all *_Hx.txt in --benchmark-dir",
+        help="Benchmark name only (e.g. BB_144_14_14); omit to process all *_Hx.txt in --benchmark-dir",
     )
     ap.add_argument(
         "--benchmark-dir",

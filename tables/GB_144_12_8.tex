@@ -1,0 +1,63 @@
+% Requires: \usepackage{booktabs, longtable}
+\begin{longtable}{llrrrl p{0.22\textwidth}}
+\caption{Benchmark solver results for \texttt{GB\_144\_12\_8} ($n=144$, scan $d \leq 20$, timeout 7200\,s per configuration).} \label{tab:bench-GB_144_12_8} \\
+\toprule
+Solver & Strategy & Time (s) & Vars & Clauses & Result & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\midrule
+\endfoot
+\bottomrule
+\endlastfoot
+z3py & seqcounter & 29.836 & 1544 & 2894 & 8 & \texttt{OK} \\
+z3py & kmtotalizer & 38.923 & 1010 & 2363 & 8 & \texttt{OK} \\
+cvc5 & seqcounter & 18.403 & 1544 & 2894 & 8 & \texttt{OK} \\
+cvc5 & kmtotalizer & 19.939 & 1010 & 2363 & 8 & \texttt{OK} \\
+minisat22 & seqcounter & 6.534 & 2827 & 7870 & 8 & \texttt{OK} \\
+minisat22 & kmtotalizer & 14.764 & 2293 & 7339 & 8 & \texttt{OK} \\
+glucose3 & seqcounter & 10.443 & 2827 & 7870 & 8 & \texttt{OK} \\
+glucose3 & kmtotalizer & 11.543 & 2293 & 7339 & 8 & \texttt{OK} \\
+glucose4 & seqcounter & 10.707 & 2827 & 7870 & 8 & \texttt{OK} \\
+glucose4 & kmtotalizer & 20.999 & 2293 & 7339 & 8 & \texttt{OK} \\
+glucose42 & seqcounter & 9.330 & 2827 & 7870 & 8 & \texttt{OK} \\
+glucose42 & kmtotalizer & 10.711 & 2293 & 7339 & 8 & \texttt{OK} \\
+cadical103 & seqcounter & 11.416 & 2827 & 7870 & 8 & \texttt{OK} \\
+cadical103 & kmtotalizer & 14.448 & 2293 & 7339 & 8 & \texttt{OK} \\
+cadical153 & seqcounter & 10.451 & 2827 & 7870 & 8 & \texttt{OK} \\
+cadical153 & kmtotalizer & 9.111 & 2293 & 7339 & 8 & \texttt{OK} \\
+cadical195 & seqcounter & 10.705 & 2827 & 7870 & 8 & \texttt{OK} \\
+cadical195 & kmtotalizer & 11.018 & 2293 & 7339 & 8 & \texttt{OK} \\
+lingeling & seqcounter & 46.070 & 2827 & 7870 & 8 & \texttt{OK} \\
+lingeling & kmtotalizer & 55.806 & 2293 & 7339 & 8 & \texttt{OK} \\
+maplesat & seqcounter & 25.684 & 2827 & 7870 & 8 & \texttt{OK} \\
+maplesat & kmtotalizer & 15.913 & 2293 & 7339 & 8 & \texttt{OK} \\
+mergesat3 & seqcounter & 49.077 & 2827 & 7870 & 8 & \texttt{OK} \\
+mergesat3 & kmtotalizer & 26.027 & 2293 & 7339 & 8 & \texttt{OK} \\
+minicard & native & 2548.731 & 1739 & 5567 & 8 & \texttt{OK} \\
+gluecard3 & native & 7200.000 & 1739 & 5567 & $\geq$8 & \texttt{timeout} \\
+gluecard4 & native & 7200.000 & 1739 & 5567 & $\geq$8 & \texttt{timeout} \\
+cryptosat & seqcounter & 39.305 & 1544 & \textasciitilde{}2738 & 8 & \texttt{OK} \\
+cryptosat & kmtotalizer & 24.266 & 1010 & \textasciitilde{}2207 & 8 & \texttt{OK} \\
+rc2-g3 & maxsat & 7.462 & 1739 & 5722 & 8 & \texttt{OK} \\
+rc2-g4 & maxsat & 11.102 & 1739 & 5722 & 8 & \texttt{OK} \\
+rc2-minisat22 & maxsat & 12.023 & 1739 & 5722 & 8 & \texttt{OK} \\
+rc2-cadical195 & maxsat & 13.769 & 1739 & 5722 & 8 & \texttt{OK} \\
+rc2-cryptosat & maxsat & 17.624 & 1739 & 5722 & 8 & \texttt{OK} \\
+rc2-glucose42 & maxsat & 9.525 & 1739 & 5722 & 8 & \texttt{OK} \\
+cashw-coreplus & maxsat & 8.451 & 1739 & 5722 & 8 & \texttt{OK} \\
+cashw-coreplus-mse22 & maxsat & 13.871 & 1739 & 5722 & 8 & \texttt{OK} \\
+evalmaxsat & maxsat & 450.171 & 1739 & 5722 & 8 & \texttt{OK} \\
+maxcdcl & maxsat & 2.656 & 1739 & 5722 & 8 & \texttt{OK} \\
+open-wbo & maxsat & 6.818 & 1739 & 5722 & 8 & \texttt{OK} \\
+distqldpc & no-card & 1.662 & 1739 & \textasciitilde{}4942 & 8 & \texttt{OK} \\
+distqldpc & card-mto & 2.216 & 5144 & \textasciitilde{}4942 & 8 & \texttt{OK} \\
+cd-gurobi & GurobiDist & 16.626 & - & - & 8 & \texttt{OK} \\
+cd-mip-scip & MIPDist & 24.483 & - & - & 8 & \texttt{OK} \\
+cd-m4ri-cc & dist\_m4ri\_CC & 15.931 & - & - & 8 & \texttt{OK} \\
+cd-magma & magmaMinWord & 7216.726 & - & - & $\leq$8 & \texttt{timeout} \\
+\midrule
+\multicolumn{7}{l}{\textit{Completed: 43/46}} \\
+\multicolumn{7}{l}{\textit{Fastest: distqldpc (no-card) in 1.662s}} \\
+\end{longtable}

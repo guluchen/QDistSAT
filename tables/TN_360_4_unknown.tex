@@ -1,0 +1,62 @@
+% Requires: \usepackage{booktabs, longtable}
+\begin{longtable}{llrrrl p{0.22\textwidth}}
+\caption{Benchmark solver results for \texttt{TN\_360\_4\_?} ($n=360$, scan $d \leq 20$, timeout 7200\,s per configuration).} \label{tab:bench-TN_360_4_unknown} \\
+\toprule
+Solver & Strategy & Time (s) & Vars & Clauses & Result & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\midrule
+\endfoot
+\bottomrule
+\endlastfoot
+z3py & seqcounter & 7200.000 & 4247 & 8110 & $\geq$10 & \texttt{timeout} \\
+z3py & kmtotalizer & 7200.000 & 2434 & 5189 & $\geq$10 & \texttt{timeout} \\
+cvc5 & seqcounter & 7200.000 & 3559 & 6738 & $\geq$8 & \texttt{timeout} \\
+cvc5 & kmtotalizer & 7200.000 & 2395 & 5177 & $\geq$7 & \texttt{timeout} \\
+minisat22 & seqcounter & 7200.000 & 7934 & 21806 & $\geq$11 & \texttt{timeout} \\
+minisat22 & kmtotalizer & 7200.000 & 5780 & 18205 & $\geq$10 & \texttt{timeout} \\
+glucose3 & seqcounter & 7200.000 & 7934 & 21806 & $\geq$11 & \texttt{timeout} \\
+glucose3 & kmtotalizer & 7200.000 & 5780 & 18204 & $\geq$11 & \texttt{timeout} \\
+glucose4 & seqcounter & 7200.000 & 7934 & 21806 & $\geq$11 & \texttt{timeout} \\
+glucose4 & kmtotalizer & 7200.000 & 5780 & 18204 & $\geq$11 & \texttt{timeout} \\
+glucose42 & seqcounter & 7200.000 & 7934 & 21806 & $\geq$11 & \texttt{timeout} \\
+glucose42 & kmtotalizer & 7200.000 & 5780 & 18204 & $\geq$11 & \texttt{timeout} \\
+cadical103 & seqcounter & 7200.000 & 7593 & 21126 & $\geq$10 & \texttt{timeout} \\
+cadical103 & kmtotalizer & 7200.000 & 5780 & 18205 & $\geq$10 & \texttt{timeout} \\
+cadical153 & seqcounter & 7200.000 & 7593 & 21126 & $\geq$10 & \texttt{timeout} \\
+cadical153 & kmtotalizer & 7200.000 & 5780 & 18204 & $\geq$11 & \texttt{timeout} \\
+cadical195 & seqcounter & 7200.000 & 7593 & 21126 & $\geq$10 & \texttt{timeout} \\
+cadical195 & kmtotalizer & 7200.000 & 5780 & 18205 & $\geq$10 & \texttt{timeout} \\
+lingeling & seqcounter & 7200.000 & 7593 & 21126 & $\geq$10 & \texttt{timeout} \\
+lingeling & kmtotalizer & 7200.000 & 5780 & 18205 & $\geq$10 & \texttt{timeout} \\
+maplesat & seqcounter & 7200.000 & 7934 & 21806 & $\geq$11 & \texttt{timeout} \\
+maplesat & kmtotalizer & 7200.000 & 5780 & 18205 & $\geq$10 & \texttt{timeout} \\
+mergesat3 & seqcounter & 7200.000 & 7934 & 21806 & $\geq$11 & \texttt{timeout} \\
+mergesat3 & kmtotalizer & 7200.000 & 5780 & 18205 & $\geq$10 & \texttt{timeout} \\
+minicard & native & 7200.000 & 4434 & 14467 & $\geq$7 & \texttt{timeout} \\
+gluecard3 & native & 7200.000 & 4434 & 14467 & $\geq$7 & \texttt{timeout} \\
+gluecard4 & native & 7200.000 & 4434 & 14467 & $\geq$7 & \texttt{timeout} \\
+cryptosat & seqcounter & 7200.000 & 4588 & - & $\geq$11 & \texttt{timeout} \\
+cryptosat & kmtotalizer & 7200.000 & 2434 & - & $\geq$11 & \texttt{timeout} \\
+rc2-g3 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-g4 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-minisat22 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cadical195 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cryptosat & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-glucose42 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+cashw-coreplus & maxsat & - & - & - & - & \texttt{timeout} \\
+cashw-coreplus-mse22 & maxsat & - & - & - & - & \texttt{timeout} \\
+evalmaxsat & maxsat & - & - & - & - & \texttt{timeout} \\
+maxcdcl & maxsat & - & - & - & - & \texttt{timeout} \\
+open-wbo & maxsat & - & - & - & - & \texttt{timeout} \\
+distqldpc & no-card & 7200.033 & - & \textasciitilde{}12994 & $\geq$8 & \texttt{timeout} \\
+distqldpc & card-mto & 7200.027 & - & \textasciitilde{}12994 & $\geq$8 & \texttt{timeout} \\
+cd-gurobi & GurobiDist & 7200.000 & - & - & - & \texttt{timeout} \\
+cd-mip-scip & MIPDist & 7200.000 & - & - & - & \texttt{timeout} \\
+cd-m4ri-cc & dist\_m4ri\_CC & 7217.294 & - & - & - & \texttt{timeout} \\
+cd-magma & magmaMinWord & 7217.160 & - & - & $\leq$25 & \texttt{timeout} \\
+\midrule
+\multicolumn{7}{l}{\textit{Completed: 0/46}} \\
+\end{longtable}

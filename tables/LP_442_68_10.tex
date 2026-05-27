@@ -1,0 +1,63 @@
+% Requires: \usepackage{booktabs, longtable}
+\begin{longtable}{llrrrl p{0.22\textwidth}}
+\caption{Benchmark solver results for \texttt{LP\_442\_68\_10} ($n=442$, scan $d \leq 20$, timeout 7200\,s per configuration).} \label{tab:bench-LP_442_68_10} \\
+\toprule
+Solver & Strategy & Time (s) & Vars & Clauses & Result & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\midrule
+\endfoot
+\bottomrule
+\endlastfoot
+z3py & seqcounter & 7200.000 & 4507 & 8372 & $\geq$8 & \texttt{timeout} \\
+z3py & kmtotalizer & 7200.000 & 3097 & 6612 & $\geq$8 & \texttt{timeout} \\
+cvc5 & seqcounter & 7200.000 & 4507 & 8372 & $\geq$8 & \texttt{timeout} \\
+cvc5 & kmtotalizer & 7200.000 & 3097 & 6613 & $\geq$7 & \texttt{timeout} \\
+minisat22 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+minisat22 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+glucose3 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+glucose3 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+glucose4 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+glucose4 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+glucose42 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+glucose42 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+cadical103 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+cadical103 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+cadical153 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+cadical153 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+cadical195 & seqcounter & 7200.000 & 10964 & 32818 & $\geq$9 & \texttt{timeout} \\
+cadical195 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+lingeling & seqcounter & 7200.000 & 10537 & 31966 & $\geq$8 & \texttt{timeout} \\
+lingeling & kmtotalizer & 7200.000 & 9127 & 30206 & $\geq$8 & \texttt{timeout} \\
+maplesat & seqcounter & 6122.926 & 11812 & 34510 & 10 & \texttt{OK} \\
+maplesat & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+mergesat3 & seqcounter & 7200.000 & 10537 & 31966 & $\geq$8 & \texttt{timeout} \\
+mergesat3 & kmtotalizer & 7200.000 & 9190 & 30765 & $\geq$9 & \texttt{timeout} \\
+minicard & native & 7200.000 & 7492 & 25449 & $\geq$6 & \texttt{timeout} \\
+gluecard3 & native & 7200.000 & 7492 & 25449 & $\geq$6 & \texttt{timeout} \\
+gluecard4 & native & 7200.000 & 7492 & 25449 & $\geq$7 & \texttt{timeout} \\
+cryptosat & seqcounter & 7200.000 & 4934 & - & $\geq$9 & \texttt{timeout} \\
+cryptosat & kmtotalizer & 7200.000 & 3097 & - & $\geq$8 & \texttt{timeout} \\
+rc2-g3 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-g4 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-minisat22 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cadical195 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cryptosat & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-glucose42 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+cashw-coreplus & maxsat & - & - & - & - & \texttt{timeout} \\
+cashw-coreplus-mse22 & maxsat & - & - & - & - & \texttt{timeout} \\
+evalmaxsat & maxsat & - & - & - & - & \texttt{timeout} \\
+maxcdcl & maxsat & 637.210 & 7492 & 25974 & 10 & \texttt{OK} \\
+open-wbo & maxsat & - & - & - & - & \texttt{timeout} \\
+distqldpc & no-card & 767.475 & 7492 & \textasciitilde{}23344 & 10 & \texttt{OK} \\
+distqldpc & card-mto & 455.881 & 15840 & \textasciitilde{}23344 & 10 & \texttt{OK} \\
+cd-gurobi & GurobiDist & 618.800 & - & - & 10 & \texttt{OK} \\
+cd-mip-scip & MIPDist & 1548.737 & - & - & 10 & \texttt{OK} \\
+cd-m4ri-cc & dist\_m4ri\_CC & 114.651 & - & - & 10 & \texttt{OK} \\
+cd-magma & magmaMinWord & 7231.800 & - & - & $\leq$10 & \texttt{timeout} \\
+\midrule
+\multicolumn{7}{l}{\textit{Completed: 7/46}} \\
+\multicolumn{7}{l}{\textit{Fastest: cd-m4ri-cc (dist\_m4ri\_CC) in 114.651s}} \\
+\end{longtable}

@@ -1,0 +1,63 @@
+% Requires: \usepackage{booktabs, longtable}
+\begin{longtable}{llrrrl p{0.22\textwidth}}
+\caption{Benchmark solver results for \texttt{BB\_144\_14\_14} ($n=144$, scan $d \leq 20$, timeout 7200\,s per configuration).} \label{tab:bench-BB_144_14_14} \\
+\toprule
+Solver & Strategy & Time (s) & Vars & Clauses & Result & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\midrule
+\endfoot
+\bottomrule
+\endlastfoot
+z3py & seqcounter & 7200.000 & 1675 & 3162 & $\geq$10 & \texttt{timeout} \\
+z3py & kmtotalizer & 7200.000 & 1014 & 2379 & $\geq$9 & \texttt{timeout} \\
+cvc5 & seqcounter & 7200.000 & 1419 & 2654 & $\geq$8 & \texttt{timeout} \\
+cvc5 & kmtotalizer & 7200.000 & 983 & 2109 & $\geq$7 & \texttt{timeout} \\
+minisat22 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+minisat22 & kmtotalizer & 7200.000 & 2844 & 9527 & $\geq$9 & \texttt{timeout} \\
+glucose3 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+glucose3 & kmtotalizer & 7200.000 & 2844 & 9527 & $\geq$9 & \texttt{timeout} \\
+glucose4 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+glucose4 & kmtotalizer & 7200.000 & 2796 & 9189 & $\geq$10 & \texttt{timeout} \\
+glucose42 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+glucose42 & kmtotalizer & 7200.000 & 2796 & 9189 & $\geq$10 & \texttt{timeout} \\
+cadical103 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+cadical103 & kmtotalizer & 7200.000 & 2796 & 9189 & $\geq$10 & \texttt{timeout} \\
+cadical153 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+cadical153 & kmtotalizer & 7200.000 & 2796 & 9189 & $\geq$10 & \texttt{timeout} \\
+cadical195 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+cadical195 & kmtotalizer & 7200.000 & 2796 & 9189 & $\geq$10 & \texttt{timeout} \\
+lingeling & seqcounter & 7200.000 & 3378 & 10058 & $\geq$9 & \texttt{timeout} \\
+lingeling & kmtotalizer & 7200.000 & 2844 & 9527 & $\geq$9 & \texttt{timeout} \\
+maplesat & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+maplesat & kmtotalizer & 7200.000 & 2796 & 9189 & $\geq$10 & \texttt{timeout} \\
+mergesat3 & seqcounter & 7200.000 & 3505 & 10310 & $\geq$10 & \texttt{timeout} \\
+mergesat3 & kmtotalizer & 7200.000 & 2844 & 9527 & $\geq$9 & \texttt{timeout} \\
+minicard & native & 7200.000 & 2290 & 7755 & $\geq$8 & \texttt{timeout} \\
+gluecard3 & native & 7200.000 & 2290 & 7755 & $\geq$7 & \texttt{timeout} \\
+gluecard4 & native & 7200.000 & 2290 & 7755 & $\geq$7 & \texttt{timeout} \\
+cryptosat & seqcounter & 7200.000 & 1548 & - & $\geq$9 & \texttt{timeout} \\
+cryptosat & kmtotalizer & 7200.000 & 1014 & - & $\geq$9 & \texttt{timeout} \\
+rc2-g3 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-g4 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-minisat22 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cadical195 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cryptosat & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-glucose42 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+cashw-coreplus & maxsat & - & - & - & - & \texttt{timeout} \\
+cashw-coreplus-mse22 & maxsat & - & - & - & - & \texttt{timeout} \\
+evalmaxsat & maxsat & - & - & - & - & \texttt{timeout} \\
+maxcdcl & maxsat & 3738.661 & 2290 & 7926 & 14 & \texttt{OK} \\
+open-wbo & maxsat & - & - & - & - & \texttt{timeout} \\
+distqldpc & no-card & 4392.673 & 2290 & \textasciitilde{}7066 & 14 & \texttt{OK} \\
+distqldpc & card-mto & 4125.959 & 3652 & \textasciitilde{}7066 & 14 & \texttt{OK} \\
+cd-gurobi & GurobiDist & 2096.766 & - & - & 14 & \texttt{OK} \\
+cd-mip-scip & MIPDist & 3294.794 & - & - & 14 & \texttt{OK} \\
+cd-m4ri-cc & dist\_m4ri\_CC & 7216.526 & - & - & - & \texttt{timeout} \\
+cd-magma & magmaMinWord & 7216.447 & - & - & $\leq$14 & \texttt{timeout} \\
+\midrule
+\multicolumn{7}{l}{\textit{Completed: 5/46}} \\
+\multicolumn{7}{l}{\textit{Fastest: cd-gurobi (GurobiDist) in 2096.766s}} \\
+\end{longtable}

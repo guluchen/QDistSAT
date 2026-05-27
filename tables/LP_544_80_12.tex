@@ -1,0 +1,63 @@
+% Requires: \usepackage{booktabs, longtable}
+\begin{longtable}{llrrrl p{0.22\textwidth}}
+\caption{Benchmark solver results for \texttt{LP\_544\_80\_12} ($n=544$, scan $d \leq 20$, timeout 7200\,s per configuration).} \label{tab:bench-LP_544_80_12} \\
+\toprule
+Solver & Strategy & Time (s) & Vars & Clauses & Result & Status \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\textit{Continued on next page}} \\
+\midrule
+\endfoot
+\bottomrule
+\endlastfoot
+z3py & seqcounter & 7200.000 & 5020 & 9262 & $\geq$7 & \texttt{timeout} \\
+z3py & kmtotalizer & 7200.000 & 3803 & 8193 & $\geq$7 & \texttt{timeout} \\
+cvc5 & seqcounter & 7200.000 & 5020 & 9262 & $\geq$7 & \texttt{timeout} \\
+cvc5 & kmtotalizer & 7200.000 & 3803 & 8193 & $\geq$7 & \texttt{timeout} \\
+minisat22 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+minisat22 & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+glucose3 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+glucose3 & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+glucose4 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+glucose4 & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+glucose42 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+glucose42 & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+cadical103 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+cadical103 & kmtotalizer & 7200.000 & 11706 & 39791 & $\geq$9 & \texttt{timeout} \\
+cadical153 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+cadical153 & kmtotalizer & 7200.000 & 11706 & 39791 & $\geq$9 & \texttt{timeout} \\
+cadical195 & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+cadical195 & kmtotalizer & 7200.000 & 11706 & 39791 & $\geq$9 & \texttt{timeout} \\
+lingeling & seqcounter & 7200.000 & 13327 & 40786 & $\geq$8 & \texttt{timeout} \\
+lingeling & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+maplesat & seqcounter & 7200.000 & 13856 & 41842 & $\geq$9 & \texttt{timeout} \\
+maplesat & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+mergesat3 & seqcounter & 7200.000 & 13327 & 40786 & $\geq$8 & \texttt{timeout} \\
+mergesat3 & kmtotalizer & 7200.000 & 11579 & 38656 & $\geq$8 & \texttt{timeout} \\
+minicard & native & 7200.000 & 9568 & 32739 & $\geq$6 & \texttt{timeout} \\
+gluecard3 & native & 7200.000 & 9568 & 32739 & $\geq$6 & \texttt{timeout} \\
+gluecard4 & native & 7200.000 & 9568 & 32739 & $\geq$7 & \texttt{timeout} \\
+cryptosat & seqcounter & 7200.000 & 6080 & - & $\geq$9 & \texttt{timeout} \\
+cryptosat & kmtotalizer & 7200.000 & 3803 & - & $\geq$8 & \texttt{timeout} \\
+rc2-g3 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-g4 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-minisat22 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cadical195 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-cryptosat & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+rc2-glucose42 & maxsat & 7200.000 & - & - & - & \texttt{timeout} \\
+cashw-coreplus & maxsat & - & - & - & - & \texttt{timeout} \\
+cashw-coreplus-mse22 & maxsat & - & - & - & - & \texttt{timeout} \\
+evalmaxsat & maxsat & - & - & - & - & \texttt{timeout} \\
+maxcdcl & maxsat & 2775.920 & 9568 & 33378 & 12 & \texttt{OK} \\
+open-wbo & maxsat & - & - & - & - & \texttt{timeout} \\
+distqldpc & no-card & 4954.660 & 9568 & \textasciitilde{}30178 & 12 & \texttt{OK} \\
+distqldpc & card-mto & 5047.318 & 17131 & \textasciitilde{}30178 & 12 & \texttt{OK} \\
+cd-gurobi & GurobiDist & 3580.673 & - & - & 12 & \texttt{OK} \\
+cd-mip-scip & MIPDist & 7200.000 & - & - & - & \texttt{timeout} \\
+cd-m4ri-cc & dist\_m4ri\_CC & 3641.403 & - & - & 12 & \texttt{OK} \\
+cd-magma & magmaMinWord & 7220.200 & - & - & $\leq$12 & \texttt{timeout} \\
+\midrule
+\multicolumn{7}{l}{\textit{Completed: 5/46}} \\
+\multicolumn{7}{l}{\textit{Fastest: maxcdcl (maxsat) in 2775.920s}} \\
+\end{longtable}

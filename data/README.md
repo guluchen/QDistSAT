@@ -9,14 +9,19 @@ Files use the same layout as [DistQLDPC](https://github.com/guluchen/DistQLDPC):
 
 Each line is a binary row (`0` / `1`, space-separated).
 
+**Stem names** use `{family}_{n}_{k}_{d}` (e.g. `BB_72_12_6`, `LP_34_20_2`).
+Use `?` when minimum distance is not certified (`BB_288_12_?`). See [NOTICE](../NOTICE)
+for upstream IDs (e.g. codeDistancePYPI `AJ_*` / `xu_*` renamed to `LP_*`).
+
 ## Copyright and attribution
 
 **Full legal text:** [NOTICE](../NOTICE) at the repository root.
 
-- **AJ_*, PK_*, TN_*, xu_*** stems: derived from
-  [codeDistancePYPI](https://github.com/m-webster/codeDistancePYPI) examples (MIT).
-- **BB_*, QT_*, GB_*, …**: provided under GPL-3.0-or-later together with QDistSAT /
-  DistQLDPC (see NOTICE).
+- **LP_*, PK_*, TN_*** stems: derived from
+  [codeDistancePYPI](https://github.com/m-webster/codeDistancePYPI) examples (MIT);
+  `LP_*` files were renamed from upstream `AJ_*` / `xu_*` (listed in NOTICE).
+- **BB_*, TN_*, GB_*, …**: provided under GPL-3.0-or-later together with QDistSAT /
+  DistQLDPC (see NOTICE). Some BB/GB stems were renamed to match certified `d`; see NOTICE §2b.
 
 Do not redistribute matrix subsets without retaining the notices above.
 

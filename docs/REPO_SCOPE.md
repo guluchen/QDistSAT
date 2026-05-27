@@ -21,7 +21,7 @@ MaxSAT reference implementation). Matrix layout and attribution match DistQLDPC;
 | `scripts/install_distqldpc.py` | DistQLDPC clone/build (`vendor/DistQLDPC`, `bin/distqldpc`) |
 | `scripts/parse_benchmark_log_to_latex.py` | Log → LaTeX |
 | `scripts/run_benchmark_stems_dir.sh` | Batch benchmark |
-| `data/matrices/` | Hx/Hz/Gx/Gz matrices ([data/README.md](../data/README.md)) |
+| `data/matrices/` | Hx/Hz/Gx/Gz matrices; stems `{family}_{n}_{k}_{d}` ([data/README.md](../data/README.md), [NOTICE](../NOTICE)) |
 | `tests/` | Pytest (excluding gitignored tests) |
 | `LICENSE`, `NOTICE` | GPL-3.0-or-later + attributions |
 

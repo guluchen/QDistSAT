@@ -1940,7 +1940,7 @@ def main() -> None:
     parser.add_argument(
         "--quick",
         action="store_true",
-        help="Quick run: stem=BB_36_8_3 (QT_36_8_3), max-distance=3, timeout<=30s",
+        help="Quick run: stem=SC_9_1_3, max-distance=3, timeout<=30s",
     )
     parser.add_argument(
         "--reduce-dependent-rows",
