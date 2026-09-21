@@ -28,8 +28,8 @@ Use `--stems-dir data` (recursive search) or a single batch folder such as
 **Stem naming in this repository:** `{family}_{n}_{k}_{d}` where `n` is code length,
 `k` is the number of logical qubits (from precomputed logical operators), and `d` is
 the certified minimum distance when known. If `d` is not certified, the stem uses
-`?` (e.g. `BB_288_12_?`). Matrix contents are unchanged; only filenames were
-aligned with benchmark metadata.
+`unknown` (e.g. `BB_288_12_unknown`) so the filenames remain portable to Windows.
+Matrix data rows are unchanged; only filenames were aligned with benchmark metadata.
 
 ### 2a. Derived from codeDistancePYPI (MIT)
 
@@ -40,10 +40,10 @@ Upstream example IDs are shown where this repository renamed files:
 
 - **LP_*** (from upstream **AJ_***): LP_34_20_2 (AJ_01), LP_136_32_4 (AJ_04),
   LP_238_44_6 (AJ_07), LP_340_56_8 (AJ_10), LP_442_68_10 (AJ_13),
-  LP_1768_224_? (AJ_52)
-- **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_? (xu_21)
+  LP_1768_224_unknown (AJ_52)
+- **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_unknown (xu_21)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
-  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_?
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_unknown
 
 Redistribution of these files must retain the upstream MIT copyright and permission
 notice from the codeDistancePYPI repository.
@@ -54,8 +54,8 @@ Provided under the QDistSAT / DistQLDPC repository license (GPL-3.0-or-later)
 unless otherwise noted in commit history or per-file headers.
 
 Renamed in this repository (same matrices, corrected metadata in filenames):
-BB_144_14_14 (was BB_144_14_0), BB_288_12_? (was BB_288_12_18),
-BB_360_12_? (was BB_360_12_24), GB_144_12_8 (was GB_144_12_24),
+BB_144_14_14 (was BB_144_14_0), BB_288_12_unknown (was BB_288_12_18),
+BB_360_12_unknown (was BB_360_12_24), GB_144_12_8 (was GB_144_12_24),
 GB_144_12_12 (was GB_144_12_37), TN_36_8_3 (was QT_36_8_3),
 TN_54_11_4 (was QT_54_11_4), TN_72_14_4 (was QT_72_14_4),
 TN_200_10_10 (was QT_200_10_10), TN_250_10_15 (was QT_250_10_15).
