@@ -33,6 +33,14 @@ def test_parse_o_v_lines():
     assert model == [1, -2, 3]
 
 
+def test_parse_o_v_lines_compact_binary_model():
+    """CASHW's ``-bm`` output encodes assignments as a compact bitstring."""
+    cost, model = parse_o_v_lines("c comment\no 2\nv 1010\n")
+
+    assert cost == 2
+    assert model == [1, -2, 3, -4]
+
+
 def test_get_spec_cashw():
     spec = get_spec("cashw-coreplus")
     assert "cashwmaxsatcoreplus" in spec.executable_relpath
