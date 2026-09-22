@@ -266,17 +266,20 @@ def explain_codedistance_failure(
     """
     Map exceptions from codedistance into a short Status column label and a longer hint.
     """
-    pre = codedistance_prerequisite(config_id)
-    if pre is not None:
-        return pre
     msg = (error or "").strip()
     low = msg.lower()
     if "dist_m4ri" in low and (
-        "no such file" in low or "not found" in low or "errno 2" in low
+        "no such file" in low
+        or "not found" in low
+        or "errno 2" in low
+        or "not installed" in low
     ):
         return ("dist_m4ri not installed", dist_m4ri_install_hint())
     if "magma" in low and (
-        "no such file" in low or "not found" in low or "errno 2" in low
+        "no such file" in low
+        or "not found" in low
+        or "errno 2" in low
+        or "not on path" in low
     ):
         return ("magma not on PATH", magma_install_hint())
     if config_id == "gurobi" or "gurobi" in low:
@@ -291,6 +294,9 @@ def explain_codedistance_failure(
             "if maxTime errors persist, report upstream codedistance issue",
         )
     if not msg:
+        pre = codedistance_prerequisite(config_id)
+        if pre is not None:
+            return pre
         return ("no distance", "codeDistance returned no distance estimate")
     short = msg.replace("\n", " ")[:60]
     return (short, f"codeDistance ({config_id}): {msg[:200]}")

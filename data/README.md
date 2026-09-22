@@ -10,7 +10,8 @@ Files use the same layout as [DistQLDPC](https://github.com/guluchen/DistQLDPC):
 Each line is a binary row (`0` / `1`, space-separated).
 
 **Stem names** use `{family}_{n}_{k}_{d}` (e.g. `BB_72_12_6`, `LP_34_20_2`).
-Use `?` when minimum distance is not certified (`BB_288_12_?`). See [NOTICE](../NOTICE)
+Use `unknown` when minimum distance is not certified (`BB_288_12_unknown`). This
+portable spelling avoids reserved filename characters on Windows. See [NOTICE](../NOTICE)
 for upstream IDs (e.g. codeDistancePYPI `AJ_*` / `xu_*` renamed to `LP_*`).
 
 ## Copyright and attribution

@@ -63,6 +63,10 @@ def test_linux_elf_not_runnable_off_linux():
         assert row["error"] is None
 
 
+@pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="Windows chmod does not model POSIX unreadable executable permissions",
+)
 def test_unreadable_path_shadow_is_ignored(monkeypatch, tmp_path):
     """PATH may contain root-owned stubs; do not treat them as installed."""
     bad = tmp_path / "cashwmaxsatcoreplus"
