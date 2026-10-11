@@ -25,7 +25,7 @@ EXPECTED_TIERS = {
         "BB_144_12_12", "GB_144_12_12", "BB_144_14_14", "LP_442_68_10",
         "LP_544_80_12", "TN_144_2_13",
     ),
-    "tier4": ("TN_250_10_15", "BB_288_12_unknown", "LP_714_100_unknown"),
+    "tier4": ("TN_250_10_15", "BB_288_12_18", "LP_714_100_16"),
     "tier5": ("BB_360_12_unknown", "LP_1768_224_unknown", "TN_360_4_unknown"),
 }
 FORMER_BATCH_DIRS = ("BB", "BB2", "LP", "LP2", "QT", "QT2")

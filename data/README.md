@@ -12,7 +12,7 @@ Each line is a binary row (`0` / `1`, space-separated).
 **Stem names** use `{family}_{n}_{k}_{d}` with family in `BB`, `GB`, `LP`, `TN`:
 `n` = code length (columns of `Hx`), `k` = number of logical qubits (rows of `Gx`),
 `d` = certified minimum distance, or `unknown` when it is not certified
-(`BB_288_12_unknown`). The `unknown` spelling avoids reserved filename characters on
+(`BB_360_12_unknown`). The `unknown` spelling avoids reserved filename characters on
 Windows. `GB_*` keeps its own prefix (not merged into `BB_*`); former `QT_*` stems and
 the former `QT`/`QT2` directories are now `TN`. See [NOTICE](../NOTICE) for upstream IDs
 (e.g. codeDistancePYPI `AJ_*` / `xu_*` renamed to `LP_*`).
@@ -29,7 +29,7 @@ DistQLDPC are not copied here.
 | `tier1` | — | BB_90_8_10, GB_144_12_8, BB_108_8_10, LP_238_44_6 |
 | `tier2` | — | LP_340_56_8 |
 | `tier3` | — | BB_144_12_12, GB_144_12_12, BB_144_14_14, LP_442_68_10, LP_544_80_12, TN_144_2_13 |
-| `tier4` | timeout **2000 s** | TN_250_10_15, BB_288_12_unknown, LP_714_100_unknown |
+| `tier4` | timeout **2000 s** | TN_250_10_15, BB_288_12_18, LP_714_100_16 |
 | `tier5` | timeout **21600 s** (6 h) | BB_360_12_unknown, LP_1768_224_unknown, TN_360_4_unknown |
 
 Note: DistQLDPC lists the tier5 code `TN_360_4_unknown` as `TN_360_4_24`; the
