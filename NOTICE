@@ -21,9 +21,9 @@ It shares benchmark matrices and licensing alignment with
 
 Matrix files follow the DistQLDPC layout: `{stem}_Hx.txt`, `_Hz.txt`, `_Gx.txt`,
 `_Gz.txt` (GF(2), space-separated 0/1 rows). In this repository they live under
-batch subdirectories of `data/` (e.g. `data/BB/`, `data/LP/`, `data/QT/`).
-Use `--stems-dir data` (recursive search) or a single batch folder such as
-`data/BB/`.
+difficulty-tier subdirectories `data/tier0/` … `data/tier5/` (tier table in
+data/README.md). Use `--stems-dir data` (recursive search) or a single tier folder
+such as `data/tier0/`.
 
 **Stem naming in this repository:** `{family}_{n}_{k}_{d}` where `n` is code length,
 `k` is the number of logical qubits (from precomputed logical operators), and `d` is
@@ -62,8 +62,28 @@ TN_200_10_10 (was QT_200_10_10), TN_250_10_15 (was QT_250_10_15).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
-copy under `vendor/DistQLDPC/` may mirror the same stems; batch layout here is
-`data/{BB,BB2,LP,LP2,QT,QT2}/` with the same `{stem}_*` filenames.
+copy under `vendor/DistQLDPC/` may mirror the same stems; the layout here is
+`data/tier0/` … `data/tier5/` with the same `{stem}_*` filenames.
+
+### 2c. Directory reorganization (2026-10-11)
+
+The matrices were moved, unchanged in content and file stem, from the former batch
+directories `data/BB/`, `data/BB2/`, `data/LP/`, `data/LP2/`, `data/QT/`, `data/QT2/`
+into the tier directories `data/tier0/` … `data/tier5/`. The former `QT`/`QT2`
+directory names are retired in favour of the `TN` family name (stems were already
+`TN_*`; earlier `QT_*` stems are listed in 2b). No stem was renamed by this move.
+Mapping of former directory -> tier:
+
+- data/BB/: BB_72_12_6 -> tier0; BB_90_8_10, BB_108_8_10, GB_144_12_8 -> tier1;
+  GB_144_12_12 -> tier3; BB_360_12_unknown -> tier5
+- data/BB2/: BB_144_12_12, BB_144_14_14 -> tier3; BB_288_12_unknown -> tier4
+- data/LP/: LP_34_20_2, LP_136_32_4 -> tier0; LP_238_44_6 -> tier1;
+  LP_340_56_8 -> tier2; LP_544_80_12 -> tier3
+- data/LP2/: LP_442_68_10 -> tier3; LP_714_100_unknown -> tier4;
+  LP_1768_224_unknown -> tier5
+- data/QT/: TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8, TN_72_14_4, TN_108_2_12,
+  TN_200_10_10 -> tier0; TN_250_10_15 -> tier4
+- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_unknown -> tier5
 
 3. External MaxSAT binaries (`bin/maxsat/`)
 -------------------------------------------

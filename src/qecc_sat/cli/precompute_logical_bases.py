@@ -95,7 +95,7 @@ def main() -> None:
         "--benchmark-dir",
         default=str(DEFAULT_MATRIX_DIR),
         metavar="DIR",
-        help="Root directory for matrices (default: data/; recurses into subdirs)",
+        help="Root directory for matrices (default: data/; recurses into tier0 … tier5)",
     )
     ap.add_argument(
         "--overwrite",

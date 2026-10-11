@@ -3,15 +3,15 @@
 # Output is tee'd to logs/<label>_bench_MMDD_HHMMSS.log (and the terminal).
 #
 # Usage:
-#   ./scripts/run_benchmark_stems_dir.sh data/BB
-#   ./scripts/run_benchmark_stems_dir.sh data
-#   LOG_FILE=logs/my_run.log ./scripts/run_benchmark_stems_dir.sh data/BB
+#   ./scripts/run_benchmark_stems_dir.sh data/tier0      # one tier (see data/README.md)
+#   ./scripts/run_benchmark_stems_dir.sh data            # all tiers (recursive)
+#   LOG_FILE=logs/my_run.log ./scripts/run_benchmark_stems_dir.sh data/tier1
 #
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 STEMS_DIR" >&2
-  echo "Example: $0 data/BB" >&2
+  echo "Example: $0 data/tier0" >&2
   exit 1
 fi
 

@@ -76,9 +76,20 @@ def run_one(binary: Path, prefix: Path, stem: str, config: str, flag: str, timeo
 
 
 def matrix_prefix(data_root: Path, stem: str) -> Path:
-    matches = list(data_root.glob(f"*/{stem}_Hx.txt"))
+    """Return ``<dir>/<stem>`` for the unique ``{stem}_Hx.txt`` under ``data_root``.
+
+    Searches recursively, so it works for the tiered layout (``data/tier0`` …
+    ``data/tier5``), for a single tier directory, and for a flat directory.
+    """
+    if not data_root.is_dir():
+        raise SystemExit(f"--data-root is not a directory: {data_root}")
+    matches = sorted(data_root.rglob(f"{stem}_Hx.txt"))
     if len(matches) != 1:
-        raise SystemExit(f"Expected exactly one Hx file for {stem} under {data_root}, found {len(matches)}")
+        found = ", ".join(str(m) for m in matches) or "none"
+        raise SystemExit(
+            f"Expected exactly one Hx file for {stem} under {data_root}, "
+            f"found {len(matches)} ({found})"
+        )
     prefix = matches[0].with_name(stem)
     for suffix in ("_Hx.txt", "_Hz.txt", "_Gx.txt", "_Gz.txt"):
         path = prefix.with_name(stem + suffix)
