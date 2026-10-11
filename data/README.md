@@ -11,9 +11,9 @@ Each line is a binary row (`0` / `1`, space-separated).
 
 **Stem names** use `{family}_{n}_{k}_{d}` with family in `BB`, `GB`, `LP`, `TN`:
 `n` = code length (columns of `Hx`), `k` = number of logical qubits (rows of `Gx`),
-`d` = certified minimum distance, or `unknown` when it is not certified
-(`BB_360_12_unknown`). The `unknown` spelling avoids reserved filename characters on
-Windows. `GB_*` keeps its own prefix (not merged into `BB_*`); former `QT_*` stems and
+`d` = certified minimum distance; when it is not certified, the current proven bounds
+`{lb}to{ub}` (e.g. `BB_360_12_17to24`) or `ge{lb}` (e.g. `LP_1768_224_ge17`), updated as bounds
+improve (DistQLDPC/PI decision 2026-10-11). These spellings stay portable to Windows. `GB_*` keeps its own prefix (not merged into `BB_*`); former `QT_*` stems and
 the former `QT`/`QT2` directories are now `TN`. See [NOTICE](../NOTICE) for upstream IDs
 (e.g. codeDistancePYPI `AJ_*` / `xu_*` renamed to `LP_*`).
 
@@ -30,9 +30,9 @@ DistQLDPC are not copied here.
 | `tier2` | — | LP_340_56_8 |
 | `tier3` | — | BB_144_12_12, GB_144_12_12, BB_144_14_14, LP_442_68_10, LP_544_80_12, TN_144_2_13 |
 | `tier4` | timeout **2000 s** | TN_250_10_15, BB_288_12_18, LP_714_100_16 |
-| `tier5` | timeout **21600 s** (6 h) | BB_360_12_unknown, LP_1768_224_unknown, TN_360_4_unknown |
+| `tier5` | timeout **21600 s** (6 h) | BB_360_12_17to24, LP_1768_224_ge17, TN_360_4_ge9 |
 
-Note: DistQLDPC lists the tier5 code `TN_360_4_unknown` as `TN_360_4_24`; the
+Note: DistQLDPC lists the tier5 code `TN_360_4_ge9` as `TN_360_4_24`; the
 difference is unresolved and the QDistSAT name is kept until it is cross-checked.
 
 Previous layout (before the tiers): `data/BB`, `data/BB2`, `data/LP`, `data/LP2`,
