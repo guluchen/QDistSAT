@@ -45,7 +45,7 @@ python3 -m pip install -e ".[dev]"
 # full benchmark stack (must run inside venv — uses venv/bin/python3, not /usr/bin/python3)
 python3 scripts/install_benchmark_deps.py
 python3 scripts/install_benchmark_deps.py --list   # distqldpc, maxcdcl, codedistance, dist_m4ri
-# ./bin/distqldpc data/BB/BB_108_8_10   # smoke test
+# ./bin/distqldpc data/tier1/BB_108_8_10   # smoke test
 
 # logical bases (if Gx/Gz missing; requires pip install above)
 precompute-logicals BB_108_8_10 --benchmark-dir data
@@ -115,8 +115,11 @@ Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 
 ## Input data
 
-`data/{batch}/{STEM}_Hx.txt`, `_Hz.txt`, `_Gx.txt`, `_Gz.txt` (batches `BB`, `BB2`,
-`LP`, `LP2`, `QT`, `QT2`) — see [data/README.md](data/README.md) and [NOTICE](NOTICE).
+`data/{tier}/{STEM}_Hx.txt`, `_Hz.txt`, `_Gx.txt`, `_Gz.txt`, where `{tier}` is one of
+`tier0` (smoke/correctness) … `tier5` (hardest; 6 h budget). Tools that take a stem
+(`--stem`, `--stems`, `precompute-logicals STEM`, `compare_distqldpc_binaries.py --stems`)
+search `data/` recursively, so the tier does not need to be given. See
+[data/README.md](data/README.md) for the tier table and [NOTICE](NOTICE) for attribution.
 
 ## Main commands
 
@@ -126,8 +129,9 @@ Details: [bin/maxsat/README.md](bin/maxsat/README.md).
 | `python3 benchmarks/benchmark_solver_performance.py …` | Multi-solver distance benchmark |
 | `python3 scripts/install_benchmark_deps.py` | Install SMT + MaxSAT + DistQLDPC + codeDistance + dist-m4ri |
 | `python3 scripts/download_maxsat_solvers.py --bench` | MaxSAT + DistQLDPC only |
-| `./scripts/run_benchmark_stems_dir.sh data` | All batch subdirs + log |
-| `./scripts/run_benchmark_stems_dir.sh data/BB` | One batch folder + log |
+| `./scripts/run_benchmark_stems_dir.sh data` | All tiers (recursive) + log |
+| `./scripts/run_benchmark_stems_dir.sh data/tier0` | One tier folder + log |
+| `./scripts/run_benchmark_six_stemdirs.sh` | `tier0` … `tier5` in parallel, one log per tier |
 
 ```bash
 python3 benchmarks/benchmark_solver_performance.py --list-solvers
@@ -146,7 +150,7 @@ QDistSAT/
 │   ├── io.py                  # Matrix I/O
 │   ├── literature_distances.py
 │   └── cli/precompute_logical_bases.py
-├── data/                      # Benchmark matrices by batch (BB, LP, QT, …; see NOTICE)
+├── data/                      # Benchmark matrices by tier (tier0 … tier5; see data/README.md)
 ├── benchmarks/
 │   └── benchmark_solver_performance.py
 ├── scripts/                   # install_benchmark_deps, MaxSAT download, LaTeX

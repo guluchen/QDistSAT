@@ -2,7 +2,7 @@
 """
 Benchmark SAT solver performance on a CSS code from parity-check matrices.
 
-Default instance: BB_72_12_6 (data/BB/BB_72_12_6_Hx.txt, _Hz.txt).
+Default instance: BB_72_12_6 (data/tier0/BB_72_12_6_Hx.txt, _Hz.txt).
 
 Tests each solver and cardinality encoding; reports time, vars, clauses.
 MaxSAT backends (``rc2-*``, ``open-wbo``, …) use one optimization pass
@@ -18,7 +18,8 @@ Usage:
   python benchmarks/benchmark_solver_performance.py --stem BB_72_12_6 -d 6
   python benchmarks/benchmark_solver_performance.py --stem BB_144_12_12 -d 12
   python benchmarks/benchmark_solver_performance.py --stems BB_72_12_6 BB_90_8_10
-  python benchmarks/benchmark_solver_performance.py --stems-dir data
+  python benchmarks/benchmark_solver_performance.py --stems-dir data          # all tiers
+  python benchmarks/benchmark_solver_performance.py --stems-dir data/tier0    # one tier
   python benchmarks/benchmark_solver_performance.py --encodings seqcounter binary
   python benchmarks/benchmark_solver_performance.py -j 4              # 4 parallel configs
   python benchmarks/benchmark_solver_performance.py --auto-jobs       # ~half of idle CPUs (default)
@@ -1911,7 +1912,7 @@ def main() -> None:
         default=None,
         metavar="DIR",
         help="Run every stem with matching _Hx/_Hz under DIR (searches subdirectories). "
-        "Example: --stems-dir data runs BB/, BB2/, LP/, QT/, …",
+        "Example: --stems-dir data runs tier0/ … tier5/; --stems-dir data/tier0 runs one tier.",
     )
     parser.add_argument(
         "--benchmark-dir",
