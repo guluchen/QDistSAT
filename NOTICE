@@ -44,7 +44,7 @@ Upstream example IDs are shown where this repository renamed files:
   LP_1768_224_ge17 (AJ_52)
 - **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_16 (xu_21; was LP_714_100_unknown)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
-  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_ge9
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_ge17
 
 Redistribution of these files must retain the upstream MIT copyright and permission
 notice from the codeDistancePYPI repository.
@@ -84,7 +84,7 @@ Mapping of former directory -> tier:
   LP_1768_224_ge17 -> tier5
 - data/QT/: TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8, TN_72_14_4, TN_108_2_12,
   TN_200_10_10 -> tier0; TN_250_10_15 -> tier4
-- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_ge9 -> tier5
+- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_ge17 -> tier5
 
 3. External MaxSAT binaries (`bin/maxsat/`)
 -------------------------------------------
