@@ -84,7 +84,7 @@ def _load_compare_harness():
 
 @pytest.mark.parametrize(
     "stem,tier",
-    [("LP_136_32_4", "tier0"), ("BB_108_8_10", "tier1"), ("TN_360_4_ge17", "tier5")],
+    [("LP_136_32_4", "tier0"), ("LP_340_56_8", "tier1"), ("TN_360_4_ge17", "tier5")],
 )
 def test_distqldpc_compare_harness_finds_stems_in_tiers(stem, tier):
     # DistQLDPC's cross-repo CI calls the harness with --data-root <QDistSAT>/data.
