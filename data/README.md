@@ -28,10 +28,10 @@ DistQLDPC are not copied here.
 Tier assignment (PI 2026-10-12, mirrored from DistQLDPC): by DistQLDPC main's time on yfclab2, slower of no-card / card-mto.
 
 | `tier0` | correctness / smoke; DistQLDPC main < 1 s on yfclab2 | BB_108_8_10, BB_144_12_12, BB_72_12_6, BB_90_8_10, GB_144_12_8, LP_136_32_4, LP_238_44_6, LP_34_20_2, TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_14_4, TN_72_8_8 |
-| `tier1` | main 1–10 s on yfclab2 | LP_340_56_8 |
-| `tier2` | main 10–100 s | BB_144_14_14, GB_144_12_12, LP_442_68_10, LP_544_80_12, TN_108_2_12, TN_200_10_10 |
-| `tier3` | main 100–2000 s | BB_288_12_18, TN_144_2_13 |
-| `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | LP_714_100_16, TN_250_10_15 |
+| `tier1` | main 1–10 s on yfclab2 | LP_340_56_8, LP_442_68_10 |
+| `tier2` | main 10–100 s | BB_144_14_14, BB_288_12_18, GB_144_12_12, LP_544_80_12, TN_108_2_12, TN_200_10_10 |
+| `tier3` | main 100–2000 s | LP_714_100_16, TN_144_2_13 |
+| `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | TN_250_10_15 |
 | `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_360_12_24, LP_1768_224_22, TN_360_4_ge17 |
 
 Note: DistQLDPC lists the tier5 code `TN_360_4_ge17` as `TN_360_4_24`; the
