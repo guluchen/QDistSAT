@@ -12,7 +12,7 @@ Each line is a binary row (`0` / `1`, space-separated).
 **Stem names** use `{family}_{n}_{k}_{d}` with family in `BB`, `GB`, `LP`, `TN`:
 `n` = code length (columns of `Hx`), `k` = number of logical qubits (rows of `Gx`),
 `d` = certified minimum distance; when it is not certified, the current proven bounds
-`{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_ge17`), updated as bounds
+`{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_17to24`), updated as bounds
 improve (DistQLDPC/PI decision 2026-10-11). These spellings stay portable to Windows. `GB_*` keeps its own prefix (not merged into `BB_*`); former `QT_*` stems and
 the former `QT`/`QT2` directories are now `TN`. See [NOTICE](../NOTICE) for upstream IDs
 (e.g. codeDistancePYPI `AJ_*` / `xu_*` renamed to `LP_*`).
@@ -32,10 +32,12 @@ Tier assignment (PI 2026-10-12, mirrored from DistQLDPC): by DistQLDPC main's ti
 | `tier2` | main 10–100 s | BB_144_14_14, BB_288_12_18, GB_144_12_12, LP_544_80_12, TN_108_2_12, TN_200_10_10 |
 | `tier3` | main 100–2000 s | LP_714_100_16, TN_144_2_13 |
 | `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | TN_250_10_15 |
-| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_360_12_24, LP_1768_224_22, TN_360_4_ge17 |
+| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_360_12_24, LP_1768_224_22, TN_360_4_17to24 |
 
-Note: DistQLDPC lists the tier5 code `TN_360_4_ge17` as `TN_360_4_24`; the
-difference is unresolved and the QDistSAT name is kept until it is cross-checked.
+Note: `TN_360_4_17to24` (was `TN_360_4_ge17`, renamed 2026-10-23 to mirror DistQLDPC): the upper bound 24
+comes from a weight-24 logical found by DistQLDPC's GH-146 finder and independently GF(2)-verified
+(DistQLDPC `optimization/experiments/GH-146/witnesses/`); the lower bound 17 is unchanged and the
+same stem is used in both repositories.
 
 Previous layout (before the tiers): `data/BB`, `data/BB2`, `data/LP`, `data/LP2`,
 `data/QT`, `data/QT2`. File stems are unchanged by the move; only directories changed.
