@@ -13,14 +13,14 @@ WINDOWS_FORBIDDEN = frozenset('<>:"\\|?*')
 MATRIX_KINDS = ("Hx", "Hz", "Gx", "Gz")
 
 # Tier membership of the stems shipped in this repository (see data/README.md).
-# Stems listed in the cross-repo tier spec that exist only in DistQLDPC are not here.
+# Same 51 stems as DistQLDPC data/matrices/ (tier5 fully mirrored 2026-10-23).
 EXPECTED_TIERS = {
     "tier0": ("BB_108_8_10", "BB_144_12_12", "BB_72_12_6", "BB_90_8_10", "GB_144_12_8", "LP_136_32_4", "LP_238_44_6", "LP_34_20_2", "TN_36_8_3", "TN_36_8_4", "TN_54_11_4", "TN_72_14_4", "TN_72_8_8"),
     "tier1": ("LP_340_56_8", "LP_442_68_10"),
     "tier2": ("BB_144_14_14", "BB_288_12_18", "GB_144_12_12", "LP_544_80_12", "TN_108_2_12", "TN_200_10_10"),
     "tier3": ("LP_714_100_16", "TN_144_2_13"),
     "tier4": ("TN_250_10_15",),
-    "tier5": ("BB_360_12_24", "LP_1768_224_22", "TN_360_4_17to24"),
+    "tier5": ("BB_360_12_24", "BB_756_16_30to34", "BB_864_4_30to40", "BB_1080_4_30to48", "LP_1020_136_16", "LP_1054_140_20", "LP_1122_148_20", "LP_1428_184_24", "LP_1768_224_22", "LP_2610_744_16", "TN_180_2_17", "TN_216_4_18", "TN_252_2_21", "TN_288_2_9to24", "TN_324_4_9to25", "TN_360_4_17to24", "TN_396_4_17to26", "TN_432_8_9to29", "TN_468_4_17to29", "TN_496_2_17to30", "TN_504_2_17to34", "TN_540_4_9to34", "TN_576_2_9to37", "TN_612_2_17to40", "TN_648_10_9to32", "TN_648_14_9to28", "TN_684_2_9to29"),
 }
 FORMER_BATCH_DIRS = ("BB", "BB2", "LP", "LP2", "QT", "QT2")
 

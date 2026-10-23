@@ -20,8 +20,8 @@ the former `QT`/`QT2` directories are now `TN`. See [NOTICE](../NOTICE) for upst
 ## Tiers
 
 Matrices live in difficulty tiers `data/tier0` … `data/tier5` (each stem is in exactly
-one tier). The tier assignment is shared with DistQLDPC; codes that ship only in
-DistQLDPC are not copied here.
+one tier). The tier assignment and the full benchmark set are shared with DistQLDPC
+(all 51 stems; the 24 remaining tier5 stems were mirrored on 2026-10-23, see NOTICE 2d).
 
 | Tier | Purpose / per-run budget | Stems in this repository |
 |------|--------------------------|--------------------------|
@@ -32,7 +32,7 @@ Tier assignment (PI 2026-10-12, mirrored from DistQLDPC): by DistQLDPC main's ti
 | `tier2` | main 10–100 s | BB_144_14_14, BB_288_12_18, GB_144_12_12, LP_544_80_12, TN_108_2_12, TN_200_10_10 |
 | `tier3` | main 100–2000 s | LP_714_100_16, TN_144_2_13 |
 | `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | TN_250_10_15 |
-| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_360_12_24, LP_1768_224_22, TN_360_4_17to24 |
+| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_360_12_24, BB_756_16_30to34, BB_864_4_30to40, BB_1080_4_30to48, LP_1020_136_16, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_9to24, TN_324_4_9to25, TN_360_4_17to24, TN_396_4_17to26, TN_432_8_9to29, TN_468_4_17to29, TN_496_2_17to30, TN_504_2_17to34, TN_540_4_9to34, TN_576_2_9to37, TN_612_2_17to40, TN_648_10_9to32, TN_648_14_9to28, TN_684_2_9to29 |
 
 Note: `TN_360_4_17to24` (was `TN_360_4_ge17`, renamed 2026-10-23 to mirror DistQLDPC): the upper bound 24
 comes from a weight-24 logical found by DistQLDPC's GH-146 finder and independently GF(2)-verified

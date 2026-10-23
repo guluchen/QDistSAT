@@ -42,9 +42,15 @@ Upstream example IDs are shown where this repository renamed files:
 - **LP_*** (from upstream **AJ_***): LP_34_20_2 (AJ_01), LP_136_32_4 (AJ_04),
   LP_238_44_6 (AJ_07), LP_340_56_8 (AJ_10), LP_442_68_10 (AJ_13),
   LP_1768_224_22 (AJ_52; was LP_1768_224_ge17)
-- **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_16 (xu_21; was LP_714_100_unknown)
+- **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_16 (xu_21; was LP_714_100_unknown),
+  LP_1020_136_16 (xu_30), LP_1428_184_24 (xu_42; was LP_1428_184_ge17)
+- **LP_*** (from upstream **PK_***): LP_1054_140_20 (PK_31; was LP_1054_140_17to32)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
-  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_17to24 (was TN_360_4_ge17)
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_17to24 (was TN_360_4_ge17),
+  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_9to24, TN_324_4_9to25, TN_396_4_17to26,
+  TN_432_8_9to29, TN_468_4_17to29, TN_496_2_17to30, TN_504_2_17to34, TN_540_4_9to34,
+  TN_576_2_9to37, TN_612_2_17to40, TN_648_10_9to32, TN_648_14_9to28, TN_684_2_9to29
+  (upstream IDs and the full rename history of these stems: DistQLDPC NOTICE section 5)
 
 Redistribution of these files must retain the upstream MIT copyright and permission
 notice from the codeDistancePYPI repository.
@@ -87,6 +93,29 @@ Mapping of former directory -> tier:
 - data/QT/: TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8, TN_72_14_4, TN_108_2_12,
   TN_200_10_10 -> tier0; TN_250_10_15 -> tier4
 - data/QT2/: TN_144_2_13 -> tier3; TN_360_4_17to24 -> tier5
+
+### 2d. Tier 5 codes mirrored from DistQLDPC (2026-10-23)
+
+24 tier5 stems that previously shipped only in DistQLDPC were copied unchanged (same
+matrices and stems as DistQLDPC main e52d15b): the LP_* and TN_* stems listed in 2a,
+plus the following.
+
+- BB_756_16_30to34, BB_864_4_30to40, BB_1080_4_30to48: GPL-3.0-or-later (as 2b).
+  Lower bound 30 from DistQLDPC's optional connected-cluster engine (GH-133/GH-138).
+  Upper bounds come from GF(2)-verified logical operators found by DistQLDPC's GH-146
+  finder, as do the upper bounds of the TN_*_{lb}to{ub} stems.
+- LP_1122_148_20 and LP_2610_744_16: the lifted-product codes lp20^{3,5} [[1122,148]]
+  and lp16^{3,7} [[2610,744]] of M. Cain et al., arXiv:2603.28627 (2026), Appendix A.1,
+  Eqs. (A3) and (A5). The matrices were built by DistQLDPC from the seed matrices listed
+  in C. Crocker's Zenodo record (doi:10.5281/zenodo.23379787, v1.1
+  doi:10.5281/zenodo.23445463, CC BY 4.0), which first established d = 20 and d = 16.
+  DistQLDPC re-verified both values.
+- C. Crocker's record also published d = 20 for [[1054,140]] (LP_1054_140_20) before
+  DistQLDPC, and it independently agrees with d = 16 for LP_714_100_16 and LP_1020_136_16.
+
+For the canonical attribution text and dated rename notes, see DistQLDPC
+[NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE) and
+data/matrices/README.md.
 
 3. External MaxSAT binaries (`bin/maxsat/`)
 -------------------------------------------
