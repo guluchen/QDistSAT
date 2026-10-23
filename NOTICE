@@ -28,7 +28,7 @@ such as `data/tier0/`.
 **Stem naming in this repository:** `{family}_{n}_{k}_{d}` where `n` is code length,
 `k` is the number of logical qubits (from precomputed logical operators), and `d` is
 the certified minimum distance when known. If `d` is not certified, the stem carries the
-current proven bounds, `{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_ge17`);
+current proven bounds, `{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_17to24`);
 earlier stems used `unknown`.
 Matrix data rows are unchanged; only filenames were aligned with benchmark metadata.
 
@@ -44,7 +44,7 @@ Upstream example IDs are shown where this repository renamed files:
   LP_1768_224_22 (AJ_52; was LP_1768_224_ge17)
 - **LP_*** (from upstream **xu_***): LP_544_80_12 (xu_16), LP_714_100_16 (xu_21; was LP_714_100_unknown)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
-  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_ge17
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_17to24 (was TN_360_4_ge17)
 
 Redistribution of these files must retain the upstream MIT copyright and permission
 notice from the codeDistancePYPI repository.
@@ -59,7 +59,9 @@ BB_144_14_14 (was BB_144_14_0), BB_288_12_18 (was BB_288_12_18, then BB_288_12_u
 BB_360_12_24 (was BB_360_12_24, then BB_360_12_17to24 until d = 24 was confirmed), GB_144_12_8 (was GB_144_12_24),
 GB_144_12_12 (was GB_144_12_37), TN_36_8_3 (was QT_36_8_3),
 TN_54_11_4 (was QT_54_11_4), TN_72_14_4 (was QT_72_14_4),
-TN_200_10_10 (was QT_200_10_10), TN_250_10_15 (was QT_250_10_15).
+TN_200_10_10 (was QT_200_10_10), TN_250_10_15 (was QT_250_10_15),
+TN_360_4_17to24 (was TN_360_4_ge17; upper bound 24 from a weight-24 logical found by DistQLDPC's
+GH-146 finder and independently GF(2)-verified, renamed 2026-10-23 to mirror DistQLDPC).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
@@ -84,7 +86,7 @@ Mapping of former directory -> tier:
   LP_1768_224_22 -> tier5
 - data/QT/: TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8, TN_72_14_4, TN_108_2_12,
   TN_200_10_10 -> tier0; TN_250_10_15 -> tier4
-- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_ge17 -> tier5
+- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_17to24 -> tier5
 
 3. External MaxSAT binaries (`bin/maxsat/`)
 -------------------------------------------

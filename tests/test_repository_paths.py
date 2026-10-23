@@ -20,7 +20,7 @@ EXPECTED_TIERS = {
     "tier2": ("BB_144_14_14", "BB_288_12_18", "GB_144_12_12", "LP_544_80_12", "TN_108_2_12", "TN_200_10_10"),
     "tier3": ("LP_714_100_16", "TN_144_2_13"),
     "tier4": ("TN_250_10_15",),
-    "tier5": ("BB_360_12_24", "LP_1768_224_22", "TN_360_4_ge17"),
+    "tier5": ("BB_360_12_24", "LP_1768_224_22", "TN_360_4_17to24"),
 }
 FORMER_BATCH_DIRS = ("BB", "BB2", "LP", "LP2", "QT", "QT2")
 
@@ -84,7 +84,7 @@ def _load_compare_harness():
 
 @pytest.mark.parametrize(
     "stem,tier",
-    [("LP_136_32_4", "tier0"), ("LP_340_56_8", "tier1"), ("TN_360_4_ge17", "tier5")],
+    [("LP_136_32_4", "tier0"), ("LP_340_56_8", "tier1"), ("TN_360_4_17to24", "tier5")],
 )
 def test_distqldpc_compare_harness_finds_stems_in_tiers(stem, tier):
     # DistQLDPC's cross-repo CI calls the harness with --data-root <QDistSAT>/data.
