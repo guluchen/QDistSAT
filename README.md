@@ -7,6 +7,12 @@ Matrix file layout and attribution: see [NOTICE](NOTICE).
 
 **License:** GPL-3.0-or-later ([LICENSE](LICENSE)).
 
+## Authors
+
+QDistSAT is developed by Yu-Fang Chen in collaboration with Ching-Yi Lai
+(National Yang Ming Chiao Tung University), at whose suggestion the project was
+started; the work continues through ongoing joint discussion.
+
 ## Quick start
 
 Clone with **HTTPS** or **SSH** (pick one):
