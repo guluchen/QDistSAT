@@ -9,7 +9,7 @@ Matrix file layout and attribution: see [NOTICE](NOTICE).
 
 ## Authors
 
-QDistSAT is developed by Yu-Fang Chen in collaboration with Ching-Yi Lai
+QDistSAT is developed by Yu-Fang Chen (Academia Sinica) in collaboration with Ching-Yi Lai
 (National Yang Ming Chiao Tung University), at whose suggestion the project was
 started; the work continues through ongoing joint discussion.
 
