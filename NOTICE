@@ -28,7 +28,7 @@ such as `data/tier0/`.
 **Stem naming in this repository:** `{family}_{n}_{k}_{d}` where `n` is code length,
 `k` is the number of logical qubits (from precomputed logical operators), and `d` is
 the certified minimum distance when known. If `d` is not certified, the stem carries the
-current proven bounds, `{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_17to24`);
+current proven bounds, `{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_23to24`);
 earlier stems used `unknown`.
 Matrix data rows are unchanged; only filenames were aligned with benchmark metadata.
 
@@ -46,10 +46,10 @@ Upstream example IDs are shown where this repository renamed files:
   LP_1020_136_16 (xu_30), LP_1428_184_24 (xu_42; was LP_1428_184_ge17)
 - **LP_*** (from upstream **PK_***): LP_1054_140_20 (PK_31; was LP_1054_140_17to32)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
-  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_17to24 (was TN_360_4_ge17),
-  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_396_4_17to26,
-  TN_432_8_23to29, TN_468_4_17to29, TN_496_2_23to30, TN_504_2_17to34, TN_540_4_23to34,
-  TN_576_2_24to37, TN_612_2_17to40, TN_648_10_9to32, TN_648_14_9to28, TN_684_2_9to29
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_23to24 (was TN_360_4_ge17, then TN_360_4_17to24),
+  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_396_4_23to26,
+  TN_432_8_23to29, TN_468_4_17to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34,
+  TN_576_2_24to37, TN_612_2_17to40, TN_648_10_22to32, TN_648_14_9to28, TN_684_2_9to29
   (upstream IDs and the full rename history of these stems: DistQLDPC NOTICE section 5)
 
 Redistribution of these files must retain the upstream MIT copyright and permission
@@ -72,7 +72,16 @@ TN_288_2_22to24 (was TN_288_2_9to24), TN_324_4_22to25 (was TN_324_4_9to25),
 TN_432_8_23to29 (was TN_432_8_9to29), TN_496_2_23to30 (was TN_496_2_17to30),
 TN_540_4_23to34 (was TN_540_4_9to34), TN_576_2_24to37 (was TN_576_2_9to37)
 (lower bounds from DistQLDPC's optional CC engine with -cc-aut=on, GH-152, reproduced with a
-different search order; upper bounds unchanged; renamed 2026-10-29 to mirror DistQLDPC).
+different search order; upper bounds unchanged; renamed 2026-10-29 to mirror DistQLDPC),
+TN_360_4_23to24 (was TN_360_4_17to24), TN_396_4_23to26 (was TN_396_4_17to26),
+TN_504_2_24to34 (was TN_504_2_17to34), TN_648_10_22to32 (was TN_648_10_9to32),
+BB_1080_4_32to48 (was BB_1080_4_30to48), BB_756_16_32to34 (was BB_756_16_30to34),
+BB_864_4_32to40 (was BB_864_4_30to40), TN_496_2_27to30 (was TN_496_2_23to30)
+(lower bounds from DistQLDPC's optional CC engine with rules that were opt-in when found: charge,
+GH-157, default on DistQLDPC main since #161; tiebreak with mrv / -cc-roworder=bfs, GH-162 / GH-183,
+and sparse,sparseov,sparsemrv, GH-181, not on DistQLDPC main; each reproduced with a different
+search order or binary of the same engine, not an independent second method; upper bounds
+unchanged; renamed 2026-10-31 to mirror DistQLDPC).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
@@ -97,7 +106,7 @@ Mapping of former directory -> tier:
   LP_1768_224_22 -> tier5
 - data/QT/: TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8, TN_72_14_4, TN_108_2_12,
   TN_200_10_10 -> tier0; TN_250_10_15 -> tier4
-- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_17to24 -> tier5
+- data/QT2/: TN_144_2_13 -> tier3; TN_360_4_23to24 -> tier5
 
 ### 2d. Tier 5 codes mirrored from DistQLDPC (2026-10-23)
 
@@ -105,8 +114,9 @@ Mapping of former directory -> tier:
 matrices and stems as DistQLDPC main e52d15b): the LP_* and TN_* stems listed in 2a,
 plus the following.
 
-- BB_756_16_30to34, BB_864_4_30to40, BB_1080_4_30to48: GPL-3.0-or-later (as 2b).
-  Lower bound 30 from DistQLDPC's optional connected-cluster engine (GH-133/GH-138).
+- BB_756_16_32to34, BB_864_4_32to40, BB_1080_4_32to48: GPL-3.0-or-later (as 2b).
+  Lower bound 32 from DistQLDPC's optional connected-cluster engine (GH-162/GH-183, 2026-10-31;
+  30 from GH-133/GH-138 before).
   Upper bounds come from GF(2)-verified logical operators found by DistQLDPC's GH-146
   finder, as do the upper bounds of the TN_*_{lb}to{ub} stems.
 - LP_1122_148_20 and LP_2610_744_16: the lifted-product codes lp20^{3,5} [[1122,148]]
