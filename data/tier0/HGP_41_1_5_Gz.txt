@@ -1,0 +1,2 @@
+# n=41  X-type logical rows  ker(Hz)/row(Hx)  parity HGP_41_1_5_Hz.txt
+1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0

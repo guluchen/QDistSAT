@@ -1,0 +1,2 @@
+# n=13  X-type logical rows  ker(Hz)/row(Hx)  parity HGP_13_1_3_Hz.txt
+1 1 1 0 0 0 0 0 0 0 0 0 0
