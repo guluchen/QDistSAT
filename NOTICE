@@ -130,7 +130,7 @@ plus the following.
 
 ### 2e. Library codes mirrored from DistQLDPC (2026-11-04)
 
-24 original generated codes from DistQLDPC (GPL-3.0-or-later; clean-room generators in DistQLDPC
+29 original generated codes from DistQLDPC (GPL-3.0-or-later; clean-room generators in DistQLDPC
 `scripts/codegen/`, no third-party code, matrices or paper text copied), placed into the tiers by
 DistQLDPC main's yfclab2 time and named with the distances DistQLDPC found (or its proven bounds);
 files byte-identical to DistQLDPC main. Construction credits:
@@ -149,6 +149,12 @@ files byte-identical to DistQLDPC main. Construction credits:
   BB codes on twisted tori): Z. Liang, K. Liu, H. Song and Y.-A. Chen, "Generalized toric codes on
   twisted tori for quantum error correction", arXiv:2503.03827v3, PRX Quantum 6, 020357 (2025),
   DOI 10.1103/rmy6-9n89, Eqs. (3)-(5), Tables 1-4.
+- AMC_108_6_9, AMC_216_6_12, AMC_330_6_14, AMC_438_6_17, AMC_522_6_20 (cyclic collapsed four-dimensional
+  abelian multi-cycle codes): H.-K. Lin, P. K. Lim, A. A. Kovalev and L. P. Pryadko, "Abelian multi-cycle
+  codes for single-shot error correction", arXiv:2506.16910v3, Eqs. 27-31, Table I; parameters of the
+  larger codes and their randomized distance estimates from F. A. Mian, O. Gwilliam and S. Krastanov,
+  "Multivariate Multicycle Codes for Complete Single-Shot Decoding", arXiv:2601.18879v2, Table VI
+  (DistQLDPC certifies all five distances exactly).
 
 All published distances of these families agree with DistQLDPC's results; the stems carry only
 DistQLDPC's own results. Provenance, generators and validation: DistQLDPC data/matrices/untiered/.
