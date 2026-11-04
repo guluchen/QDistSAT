@@ -48,8 +48,8 @@ Upstream example IDs are shown where this repository renamed files:
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
   TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_23to24 (was TN_360_4_ge17, then TN_360_4_17to24),
   TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_396_4_23to26,
-  TN_432_8_23to29, TN_468_4_17to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34,
-  TN_576_2_24to37, TN_612_2_17to40, TN_648_10_22to32, TN_648_14_9to28, TN_684_2_9to29
+  TN_432_8_23to29, TN_468_4_23to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34,
+  TN_576_2_24to37, TN_612_2_24to40, TN_648_10_22to32, TN_648_14_21to28, TN_684_2_22to29
   (upstream IDs and the full rename history of these stems: DistQLDPC NOTICE section 5)
 
 Redistribution of these files must retain the upstream MIT copyright and permission
@@ -81,7 +81,13 @@ BB_864_4_32to40 (was BB_864_4_30to40), TN_496_2_27to30 (was TN_496_2_23to30)
 GH-157, default on DistQLDPC main since #161; tiebreak with mrv / -cc-roworder=bfs, GH-162 / GH-183,
 and sparse,sparseov,sparsemrv, GH-181, not on DistQLDPC main; each reproduced with a different
 search order or binary of the same engine, not an independent second method; upper bounds
-unchanged; renamed 2026-10-31 to mirror DistQLDPC).
+unchanged; renamed 2026-10-31 to mirror DistQLDPC),
+TN_468_4_23to29 (was TN_468_4_17to29), TN_612_2_24to40 (was TN_612_2_17to40),
+TN_648_14_21to28 (was TN_648_14_9to28), TN_684_2_22to29 (was TN_684_2_9to29)
+(lower bounds from DistQLDPC's optional CC engine in the GH-217 Tier 5 runs, guluchen/DistQLDPC#217:
+reached by both DistQLDPC main's CC default and the GH-217 candidate, each reproduced with relabelled
+qubits and rows; same engine, not an independent second method; upper bounds unchanged;
+renamed 2026-11-05 to mirror DistQLDPC).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
