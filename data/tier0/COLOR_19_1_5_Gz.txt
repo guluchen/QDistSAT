@@ -1,0 +1,2 @@
+# n=19  X-type logical rows  ker(Hz)/row(Hx)  parity COLOR_19_1_5_Hz.txt
+1 1 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0

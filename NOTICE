@@ -128,6 +128,31 @@ plus the following.
 - C. Crocker's record also published d = 20 for [[1054,140]] (LP_1054_140_20) before
   DistQLDPC, and it independently agrees with d = 16 for LP_714_100_16 and LP_1020_136_16.
 
+### 2e. Library codes mirrored from DistQLDPC (2026-11-04)
+
+24 original generated codes from DistQLDPC (GPL-3.0-or-later; clean-room generators in DistQLDPC
+`scripts/codegen/`, no third-party code, matrices or paper text copied), placed into the tiers by
+DistQLDPC main's yfclab2 time and named with the distances DistQLDPC found (or its proven bounds);
+files byte-identical to DistQLDPC main. Construction credits:
+
+- HGP_13_1_3, HGP_41_1_5, HGP_113_1_8, HGP_265_1_12, HGP_481_1_16, HGP_1105_1_24 (repetition-code
+  hypergraph products) and HGP_45_9_3, HGP_106_16_4, HGP_306_36_5, HGP_610_64_6, HGP_1261_121_6,
+  HGP_2866_256_8 (cycle-code hypergraph products of the K4, K3,3, Petersen, Heawood, Desargues and
+  Tutte-Coxeter graphs): J.-P. Tillich and G. Zemor, "Quantum LDPC Codes With Positive Rate and Minimum
+  Distance Proportional to the Square Root of the Blocklength", arXiv:0903.0566v2, Theorem 1,
+  DOI 10.1109/TIT.2013.2292061; graph descriptions after A. E. Brouwer (https://aeb.win.tue.nl/graphs/).
+- COLOR_7_1_3, COLOR_19_1_5, COLOR_127_1_13, COLOR_331_1_21, COLOR_1027_1_28to37, COLOR_2791_1_26to61
+  (triangular 6.6.6 color codes): H. Bombin and M. A. Martin-Delgado, "Topological Quantum Distillation",
+  quant-ph/0605138v3, DOI 10.1103/PhysRevLett.97.180501; patch parameters and boundary logicals after
+  K. Sahay and B. J. Brown, arXiv:2108.11395v3, Sec. II.
+- BB_30_4_6, BB_120_8_12, BB_186_10_14, BB_248_10_18, BB_294_10_20, BB_340_16_18 (generalized toric /
+  BB codes on twisted tori): Z. Liang, K. Liu, H. Song and Y.-A. Chen, "Generalized toric codes on
+  twisted tori for quantum error correction", arXiv:2503.03827v3, PRX Quantum 6, 020357 (2025),
+  DOI 10.1103/rmy6-9n89, Eqs. (3)-(5), Tables 1-4.
+
+All published distances of these families agree with DistQLDPC's results; the stems carry only
+DistQLDPC's own results. Provenance, generators and validation: DistQLDPC data/matrices/untiered/.
+
 For the canonical attribution text and dated rename notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE) and
 data/matrices/README.md.

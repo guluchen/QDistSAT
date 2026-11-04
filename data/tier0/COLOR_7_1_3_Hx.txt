@@ -1,0 +1,4 @@
+# triangular 6.6.6 color code d=3; Hx; arXiv:2108.11395v3 Sec.II
+1 1 1 1 0 0 0
+0 1 1 0 1 1 0
+0 0 1 1 0 1 1

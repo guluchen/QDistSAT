@@ -9,7 +9,7 @@ Files use the same layout as [DistQLDPC](https://github.com/guluchen/DistQLDPC):
 
 Each line is a binary row (`0` / `1`, space-separated).
 
-**Stem names** use `{family}_{n}_{k}_{d}` with family in `BB`, `GB`, `LP`, `TN`:
+**Stem names** use `{family}_{n}_{k}_{d}` with family in `BB`, `COLOR`, `GB`, `HGP`, `LP`, `TN` (`HGP` hypergraph product, `COLOR` 6.6.6 color code, 2026-11-04):
 `n` = code length (columns of `Hx`), `k` = number of logical qubits (rows of `Gx`),
 `d` = certified minimum distance; when it is not certified, the current proven bounds
 `{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_23to24`), updated as bounds
@@ -21,18 +21,18 @@ the former `QT`/`QT2` directories are now `TN`. See [NOTICE](../NOTICE) for upst
 
 Matrices live in difficulty tiers `data/tier0` … `data/tier5` (each stem is in exactly
 one tier). The tier assignment and the full benchmark set are shared with DistQLDPC
-(all 51 stems; the 24 remaining tier5 stems were mirrored on 2026-10-23, see NOTICE 2d).
+(all 75 stems; the 24 remaining tier5 stems were mirrored on 2026-10-23, see NOTICE 2d; the 24 DistQLDPC library codes on 2026-11-04, NOTICE 2e).
 
 | Tier | Purpose / per-run budget | Stems in this repository |
 |------|--------------------------|--------------------------|
 Tier assignment (PI 2026-10-12, mirrored from DistQLDPC): by DistQLDPC main's time on yfclab2, slower of no-card / card-mto.
 
-| `tier0` | correctness / smoke; DistQLDPC main < 1 s on yfclab2 | BB_108_8_10, BB_144_12_12, BB_72_12_6, BB_90_8_10, GB_144_12_8, LP_136_32_4, LP_238_44_6, LP_34_20_2, TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_14_4, TN_72_8_8 |
-| `tier1` | main 1–10 s on yfclab2 | LP_340_56_8, LP_442_68_10 |
-| `tier2` | main 10–100 s | BB_144_14_14, BB_288_12_18, GB_144_12_12, LP_544_80_12, TN_108_2_12, TN_200_10_10 |
-| `tier3` | main 100–2000 s | LP_714_100_16, TN_144_2_13 |
-| `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | TN_250_10_15 |
-| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_360_12_24, BB_756_16_32to34, BB_864_4_32to40, BB_1080_4_32to48, LP_1020_136_16, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_360_4_23to24, TN_396_4_23to26, TN_432_8_23to29, TN_468_4_17to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34, TN_576_2_24to37, TN_612_2_17to40, TN_648_10_22to32, TN_648_14_9to28, TN_684_2_9to29 |
+| `tier0` | correctness / smoke; DistQLDPC main < 1 s on yfclab2 | BB_108_8_10, BB_120_8_12, BB_144_12_12, BB_30_4_6, BB_72_12_6, BB_90_8_10, COLOR_19_1_5, COLOR_7_1_3, GB_144_12_8, HGP_106_16_4, HGP_113_1_8, HGP_13_1_3, HGP_306_36_5, HGP_41_1_5, HGP_45_9_3, LP_136_32_4, LP_238_44_6, LP_34_20_2, TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_14_4, TN_72_8_8 |
+| `tier1` | main 1–10 s on yfclab2 | BB_186_10_14, BB_288_12_18, COLOR_127_1_13, GB_144_12_12, HGP_265_1_12, HGP_610_64_6, LP_340_56_8, LP_442_68_10 |
+| `tier2` | main 10–100 s | BB_144_14_14, BB_248_10_18, BB_340_16_18, LP_544_80_12, TN_108_2_12, TN_144_2_13, TN_200_10_10 |
+| `tier3` | main 100–2000 s | BB_294_10_20, HGP_1261_121_6, HGP_2866_256_8, HGP_481_1_16, LP_1020_136_16, LP_714_100_16, TN_250_10_15 |
+| `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | (none) |
+| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_1080_4_32to48, BB_360_12_24, BB_756_16_32to34, BB_864_4_32to40, COLOR_1027_1_28to37, COLOR_2791_1_26to61, COLOR_331_1_21, HGP_1105_1_24, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_360_4_23to24, TN_396_4_23to26, TN_432_8_23to29, TN_468_4_17to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34, TN_576_2_24to37, TN_612_2_17to40, TN_648_10_22to32, TN_648_14_9to28, TN_684_2_9to29 |
 
 Note: `TN_360_4_17to24` (was `TN_360_4_ge17`, renamed 2026-10-23 to mirror DistQLDPC): the upper bound 24
 comes from a weight-24 logical found by DistQLDPC's GH-146 finder and independently GF(2)-verified
@@ -60,6 +60,8 @@ guluchen/DistQLDPC#161; `tiebreak` with `mrv` / `-cc-roworder=bfs`, guluchen/Dis
 different search order or binary of the same engine (not an independent second method; details in
 DistQLDPC `data/matrices/README.md`, rename history).
 
+Note: on 2026-11-04 every stem was re-tiered by DistQLDPC main 02879a93's yfclab2 baseline (5000 s limit for all codes; DistQLDPC `optimization/baselines/SERVER.md`) and the 24 DistQLDPC library codes were mirrored (NOTICE 2e). Moves of existing stems: GB_144_12_12 and BB_288_12_18 tier2 -> tier1, TN_144_2_13 tier3 -> tier2, TN_250_10_15 tier4 -> tier3, LP_1020_136_16 tier5 -> tier3. Tier 4 is empty after this re-tier.
+
 Previous layout (before the tiers): `data/BB`, `data/BB2`, `data/LP`, `data/LP2`,
 `data/QT`, `data/QT2`. File stems are unchanged by the move; only directories changed.
 
@@ -74,6 +76,8 @@ its tier (`--stem`, `--stems`, `precompute-logicals STEM`,
 - **LP_*, PK_*, TN_*** stems: derived from
   [codeDistancePYPI](https://github.com/m-webster/codeDistancePYPI) examples (MIT);
   `LP_*` files were renamed from upstream `AJ_*` / `xu_*` (listed in NOTICE).
+- **HGP_*, COLOR_*** and the twisted-torus **BB_*** library codes: original generated matrices from DistQLDPC
+  (GPL-3.0-or-later; constructions credited in NOTICE 2e).
 - **BB_*, TN_*, GB_*, …**: provided under GPL-3.0-or-later together with QDistSAT /
   DistQLDPC (see NOTICE). Some BB/GB stems were renamed to match certified `d`; see NOTICE §2b.
 

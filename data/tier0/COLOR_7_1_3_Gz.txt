@@ -1,0 +1,2 @@
+# n=7  X-type logical rows  ker(Hz)/row(Hx)  parity COLOR_7_1_3_Hz.txt
+1 1 0 0 1 0 0
