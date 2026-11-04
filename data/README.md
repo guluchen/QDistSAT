@@ -32,7 +32,7 @@ Tier assignment (PI 2026-10-12, mirrored from DistQLDPC): by DistQLDPC main's ti
 | `tier2` | main 10–100 s | AMC_522_6_20, BB_144_14_14, BB_248_10_18, BB_340_16_18, LP_544_80_12, TN_108_2_12, TN_144_2_13, TN_200_10_10 |
 | `tier3` | main 100–2000 s | BB_294_10_20, HGP_1261_121_6, HGP_2866_256_8, HGP_481_1_16, LP_1020_136_16, LP_714_100_16, TN_250_10_15 |
 | `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | (none) |
-| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_1080_4_32to48, BB_360_12_24, BB_756_16_32to34, BB_864_4_32to40, COLOR_1027_1_28to37, COLOR_2791_1_26to61, COLOR_331_1_21, HGP_1105_1_24, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_360_4_23to24, TN_396_4_23to26, TN_432_8_23to29, TN_468_4_17to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34, TN_576_2_24to37, TN_612_2_17to40, TN_648_10_22to32, TN_648_14_9to28, TN_684_2_9to29 |
+| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_1080_4_32to48, BB_360_12_24, BB_756_16_32to34, BB_864_4_32to40, COLOR_1027_1_28to37, COLOR_2791_1_26to61, COLOR_331_1_21, HGP_1105_1_24, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_22to25, TN_360_4_23to24, TN_396_4_23to26, TN_432_8_23to29, TN_468_4_23to29, TN_496_2_27to30, TN_504_2_24to34, TN_540_4_23to34, TN_576_2_24to37, TN_612_2_24to40, TN_648_10_22to32, TN_648_14_21to28, TN_684_2_22to29 |
 
 Note: `TN_360_4_17to24` (was `TN_360_4_ge17`, renamed 2026-10-23 to mirror DistQLDPC): the upper bound 24
 comes from a weight-24 logical found by DistQLDPC's GH-146 finder and independently GF(2)-verified
@@ -59,6 +59,13 @@ guluchen/DistQLDPC#161; `tiebreak` with `mrv` / `-cc-roworder=bfs`, guluchen/Dis
 `sparse,sparseov,sparsemrv`, guluchen/DistQLDPC#203, not on DistQLDPC main), each reproduced with a
 different search order or binary of the same engine (not an independent second method; details in
 DistQLDPC `data/matrices/README.md`, rename history).
+
+Note: four more tier5 stems were renamed on 2026-11-05 to mirror DistQLDPC (same matrices, upper bounds
+unchanged): TN_468_4_23to29 (was `TN_468_4_17to29`), TN_612_2_24to40 (was `TN_612_2_17to40`),
+TN_648_14_21to28 (was `TN_648_14_9to28`), TN_684_2_22to29 (was `TN_684_2_9to29`). The lower bounds come
+from DistQLDPC's optional CC engine in the GH-217 Tier 5 runs (guluchen/DistQLDPC#217): both DistQLDPC
+main's CC default and the GH-217 candidate reached them, and a relabelled run reproduced each (same
+engine, not an independent second method).
 
 Note: on 2026-11-04 every stem was re-tiered by DistQLDPC main 02879a93's yfclab2 baseline (5000 s limit for all codes; DistQLDPC `optimization/baselines/SERVER.md`) and the 29 DistQLDPC library codes were mirrored (NOTICE 2e). Moves of existing stems: GB_144_12_12 and BB_288_12_18 tier2 -> tier1, TN_144_2_13 tier3 -> tier2, TN_250_10_15 tier4 -> tier3, LP_1020_136_16 tier5 -> tier3. Tier 4 is empty after this re-tier.
 
