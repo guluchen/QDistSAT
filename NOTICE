@@ -100,8 +100,8 @@ DistQLDPC),
 TN_288_2_23to24 (was TN_288_2_22to24), TN_432_8_24to29 (was TN_432_8_23to29),
 TN_468_4_24to29 (was TN_468_4_23to29), TN_576_2_25to37 (was TN_576_2_24to37),
 TN_612_2_25to40 (was TN_612_2_24to40), COLOR_1027_1_32to37 (was COLOR_1027_1_31to37),
-COLOR_2791_1_29to61 (was COLOR_2791_1_28to61)
-(lower bounds from DistQLDPC's optional CC engine in 12 h follow-up runs of guluchen/DistQLDPC#225,
+COLOR_2791_1_29to61 (was COLOR_2791_1_28to61), BB_1080_4_34to48 (was BB_1080_4_32to48)
+(lower bounds from DistQLDPC's optional CC engine in 12-24 h follow-up runs of guluchen/DistQLDPC#225,
 each reached by at least two runs with different search trees: DistQLDPC main's gated-erasure CC
 default and an ungated-erasure run of an earlier main, or a different row order; same engine, not an
 independent second method; upper bounds unchanged; renamed 2026-11-07 to mirror DistQLDPC).
@@ -137,9 +137,9 @@ Mapping of former directory -> tier:
 matrices and stems as DistQLDPC main e52d15b): the LP_* and TN_* stems listed in 2a,
 plus the following.
 
-- BB_756_16_32to34, BB_864_4_32to40, BB_1080_4_32to48: GPL-3.0-or-later (as 2b).
+- BB_756_16_32to34, BB_864_4_32to40, BB_1080_4_34to48: GPL-3.0-or-later (as 2b).
   Lower bound 32 from DistQLDPC's optional connected-cluster engine (GH-162/GH-183, 2026-10-31;
-  30 from GH-133/GH-138 before).
+  30 from GH-133/GH-138 before); BB_1080 lower bound 34 from the GH-225 follow-up (2026-11-07).
   Upper bounds come from GF(2)-verified logical operators found by DistQLDPC's GH-146
   finder, as do the upper bounds of the TN_*_{lb}to{ub} stems.
 - LP_1122_148_20 and LP_2610_744_16: the lifted-product codes lp20^{3,5} [[1122,148]]
