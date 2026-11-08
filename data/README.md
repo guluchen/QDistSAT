@@ -12,7 +12,7 @@ Each line is a binary row (`0` / `1`, space-separated).
 **Stem names** use `{family}_{n}_{k}_{d}` with family in `AMC`, `BB`, `COLOR`, `GB`, `HGP`, `LP`, `TN` (`HGP` hypergraph product, `COLOR` 6.6.6 color code, `AMC` abelian multi-cycle, 2026-11-04):
 `n` = code length (columns of `Hx`), `k` = number of logical qubits (rows of `Gx`),
 `d` = certified minimum distance; when it is not certified, the current proven bounds
-`{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_23to24`), updated as bounds
+`{lb}to{ub}` or `ge{lb}` (e.g. `TN_396_4_24to26`), updated as bounds
 improve (DistQLDPC/PI decision 2026-10-11). These spellings stay portable to Windows. `GB_*` keeps its own prefix (not merged into `BB_*`); former `QT_*` stems and
 the former `QT`/`QT2` directories are now `TN`. See [NOTICE](../NOTICE) for upstream IDs
 (e.g. codeDistancePYPI `AJ_*` / `xu_*` renamed to `LP_*`).
@@ -32,7 +32,7 @@ Tier assignment (PI 2026-10-12, mirrored from DistQLDPC): by DistQLDPC main's ti
 | `tier2` | main 10–100 s | AMC_522_6_20, BB_144_14_14, BB_248_10_18, BB_340_16_18, LP_544_80_12, TN_108_2_12, TN_144_2_13, TN_200_10_10 |
 | `tier3` | main 100–2000 s | BB_294_10_20, HGP_1261_121_6, HGP_2866_256_8, HGP_481_1_16, LP_1020_136_16, LP_714_100_16, TN_250_10_15 |
 | `tier4` | main 2000–5000 s; timeout **2000 s** Mac / **5000 s** yfclab2 | (none) |
-| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_1080_4_32to48, BB_360_12_24, BB_756_16_32to34, BB_864_4_32to40, COLOR_1027_1_31to37, COLOR_2791_1_28to61, COLOR_331_1_21, HGP_1105_1_24, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_23to25, TN_360_4_23to24, TN_396_4_23to26, TN_432_8_23to29, TN_468_4_23to29, TN_496_2_28to30, TN_504_2_24to34, TN_540_4_24to34, TN_576_2_24to37, TN_612_2_24to40, TN_648_10_22to32, TN_648_14_22to28, TN_684_2_24to29 |
+| `tier5` | main > 5000 s or unsolved; timeout **21600 s** (6 h) | BB_1080_4_34to48, BB_360_12_24, BB_756_16_34, BB_864_4_34to40, COLOR_1027_1_33to37, COLOR_2791_1_30to61, COLOR_331_1_21, HGP_1105_1_24, LP_1054_140_20, LP_1122_148_20, LP_1428_184_24, LP_1768_224_22, LP_2610_744_16, TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_24, TN_324_4_24to25, TN_360_4_24, TN_396_4_24to26, TN_432_8_25to29, TN_468_4_25to29, TN_496_2_30, TN_504_2_25to34, TN_540_4_25to34, TN_576_2_26to37, TN_612_2_26to40, TN_648_10_23to32, TN_648_14_23to28, TN_684_2_25to29 |
 
 Note: `TN_360_4_17to24` (was `TN_360_4_ge17`, renamed 2026-10-23 to mirror DistQLDPC): the upper bound 24
 comes from a weight-24 logical found by DistQLDPC's GH-146 finder and independently GF(2)-verified
@@ -75,6 +75,20 @@ TN_540_4_24to34 (was `TN_540_4_23to34`), TN_648_14_22to28 (was `TN_648_14_21to28
 `erasure` rule (guluchen/DistQLDPC#225, #227), and each was reached by at least two runs with different
 search trees (relabelled qubits and rows, a different row order, or a different binary); same engine,
 not an independent second method; details in DistQLDPC `data/matrices/README.md`, rename history.
+
+Note: nineteen more tier5 stems were renamed on 2026-11-07 to mirror DistQLDPC (same matrices, upper
+bounds unchanged): BB_1080_4_34to48 (was BB_1080_4_32to48), BB_756_16_34 (was BB_756_16_32to34),
+BB_864_4_34to40 (was BB_864_4_32to40), COLOR_1027_1_33to37 (was COLOR_1027_1_31to37), COLOR_2791_1_30to61
+(was COLOR_2791_1_28to61), TN_288_2_24 (was TN_288_2_22to24), TN_324_4_24to25 (was TN_324_4_23to25),
+TN_360_4_24 (was TN_360_4_23to24), TN_396_4_24to26 (was TN_396_4_23to26), TN_432_8_25to29 (was
+TN_432_8_23to29), TN_468_4_25to29 (was TN_468_4_23to29), TN_496_2_30 (was TN_496_2_28to30),
+TN_504_2_25to34 (was TN_504_2_24to34), TN_540_4_25to34 (was TN_540_4_24to34), TN_576_2_26to37 (was
+TN_576_2_24to37), TN_612_2_26to40 (was TN_612_2_24to40), TN_648_10_23to32 (was TN_648_10_22to32),
+TN_648_14_23to28 (was TN_648_14_22to28), TN_684_2_25to29 (was TN_684_2_24to29). BB_756_16_34,
+TN_288_2_24, TN_360_4_24 and TN_496_2_30 are exact: the lower bound meets the verified upper bound. Each
+lower bound comes from DistQLDPC's optional CC engine in 12-36 h follow-up runs (guluchen/DistQLDPC#225)
+and was reached by two runs with different search trees (same engine, not an independent second method;
+details in DistQLDPC `data/matrices/README.md`, rename history).
 
 Note: on 2026-11-04 every stem was re-tiered by DistQLDPC main 02879a93's yfclab2 baseline (5000 s limit for all codes; DistQLDPC `optimization/baselines/SERVER.md`) and the 29 DistQLDPC library codes were mirrored (NOTICE 2e). Moves of existing stems: GB_144_12_12 and BB_288_12_18 tier2 -> tier1, TN_144_2_13 tier3 -> tier2, TN_250_10_15 tier4 -> tier3, LP_1020_136_16 tier5 -> tier3. Tier 4 is empty after this re-tier.
 

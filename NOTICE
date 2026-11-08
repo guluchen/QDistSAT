@@ -28,7 +28,7 @@ such as `data/tier0/`.
 **Stem naming in this repository:** `{family}_{n}_{k}_{d}` where `n` is code length,
 `k` is the number of logical qubits (from precomputed logical operators), and `d` is
 the certified minimum distance when known. If `d` is not certified, the stem carries the
-current proven bounds, `{lb}to{ub}` or `ge{lb}` (e.g. `TN_360_4_23to24`);
+current proven bounds, `{lb}to{ub}` or `ge{lb}` (e.g. `TN_396_4_24to26`);
 earlier stems used `unknown`.
 Matrix data rows are unchanged; only filenames were aligned with benchmark metadata.
 
@@ -46,10 +46,10 @@ Upstream example IDs are shown where this repository renamed files:
   LP_1020_136_16 (xu_30), LP_1428_184_24 (xu_42; was LP_1428_184_ge17)
 - **LP_*** (from upstream **PK_***): LP_1054_140_20 (PK_31; was LP_1054_140_17to32)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
-  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_23to24 (was TN_360_4_ge17, then TN_360_4_17to24),
-  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_22to24, TN_324_4_23to25, TN_396_4_23to26,
-  TN_432_8_23to29, TN_468_4_23to29, TN_496_2_28to30, TN_504_2_24to34, TN_540_4_24to34,
-  TN_576_2_24to37, TN_612_2_24to40, TN_648_10_22to32, TN_648_14_22to28, TN_684_2_24to29
+  TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_24 (was TN_360_4_ge17, then TN_360_4_17to24, TN_360_4_23to24),
+  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_24, TN_324_4_24to25, TN_396_4_24to26,
+  TN_432_8_25to29, TN_468_4_25to29, TN_496_2_30, TN_504_2_25to34, TN_540_4_25to34,
+  TN_576_2_26to37, TN_612_2_26to40, TN_648_10_23to32, TN_648_14_23to28, TN_684_2_25to29
   (upstream IDs and the full rename history of these stems: DistQLDPC NOTICE section 5)
 
 Redistribution of these files must retain the upstream MIT copyright and permission
@@ -96,7 +96,19 @@ COLOR_2791_1_28to61 (was COLOR_2791_1_26to61)
 GH-225 / GH-227 Tier 5 runs, guluchen/DistQLDPC#225 and #227, each reached by at least two runs with
 different search trees: relabelled qubits and rows, a different row order, or a different binary;
 same engine, not an independent second method; upper bounds unchanged; renamed 2026-11-06 to mirror
-DistQLDPC).
+DistQLDPC),
+BB_1080_4_34to48 (was BB_1080_4_32to48), BB_756_16_34 (was BB_756_16_32to34), BB_864_4_34to40 (was
+BB_864_4_32to40), COLOR_1027_1_33to37 (was COLOR_1027_1_31to37), COLOR_2791_1_30to61 (was
+COLOR_2791_1_28to61), TN_288_2_24 (was TN_288_2_22to24), TN_324_4_24to25 (was TN_324_4_23to25),
+TN_360_4_24 (was TN_360_4_23to24), TN_396_4_24to26 (was TN_396_4_23to26), TN_432_8_25to29 (was
+TN_432_8_23to29), TN_468_4_25to29 (was TN_468_4_23to29), TN_496_2_30 (was TN_496_2_28to30),
+TN_504_2_25to34 (was TN_504_2_24to34), TN_540_4_25to34 (was TN_540_4_24to34), TN_576_2_26to37 (was
+TN_576_2_24to37), TN_612_2_26to40 (was TN_612_2_24to40), TN_648_10_23to32 (was TN_648_10_22to32),
+TN_648_14_23to28 (was TN_648_14_22to28), TN_684_2_25to29 (was TN_684_2_24to29)
+(lower bounds from DistQLDPC's optional CC engine in 12-36 h follow-up runs of guluchen/DistQLDPC#225, each
+reached by two runs with different search trees; BB_756_16_34, TN_288_2_24, TN_360_4_24 and TN_496_2_30 are exact:
+the lower bound meets the verified upper bound; same engine, not an independent second method; upper bounds
+unchanged; renamed 2026-11-07 to mirror DistQLDPC).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
@@ -129,9 +141,9 @@ Mapping of former directory -> tier:
 matrices and stems as DistQLDPC main e52d15b): the LP_* and TN_* stems listed in 2a,
 plus the following.
 
-- BB_756_16_32to34, BB_864_4_32to40, BB_1080_4_32to48: GPL-3.0-or-later (as 2b).
+- BB_756_16_34, BB_864_4_34to40, BB_1080_4_34to48: GPL-3.0-or-later (as 2b).
   Lower bound 32 from DistQLDPC's optional connected-cluster engine (GH-162/GH-183, 2026-10-31;
-  30 from GH-133/GH-138 before).
+  30 from GH-133/GH-138 before); lower bound 34 for all three from the GH-225 follow-up (2026-11-07); BB_756 d = 34.
   Upper bounds come from GF(2)-verified logical operators found by DistQLDPC's GH-146
   finder, as do the upper bounds of the TN_*_{lb}to{ub} stems.
 - LP_1122_148_20 and LP_2610_744_16: the lifted-product codes lp20^{3,5} [[1122,148]]
@@ -156,7 +168,7 @@ files byte-identical to DistQLDPC main. Construction credits:
   Tutte-Coxeter graphs): J.-P. Tillich and G. Zemor, "Quantum LDPC Codes With Positive Rate and Minimum
   Distance Proportional to the Square Root of the Blocklength", arXiv:0903.0566v2, Theorem 1,
   DOI 10.1109/TIT.2013.2292061; graph descriptions after A. E. Brouwer (https://aeb.win.tue.nl/graphs/).
-- COLOR_7_1_3, COLOR_19_1_5, COLOR_127_1_13, COLOR_331_1_21, COLOR_1027_1_31to37, COLOR_2791_1_28to61
+- COLOR_7_1_3, COLOR_19_1_5, COLOR_127_1_13, COLOR_331_1_21, COLOR_1027_1_33to37, COLOR_2791_1_30to61
   (triangular 6.6.6 color codes): H. Bombin and M. A. Martin-Delgado, "Topological Quantum Distillation",
   quant-ph/0605138v3, DOI 10.1103/PhysRevLett.97.180501; patch parameters and boundary logicals after
   K. Sahay and B. J. Brown, arXiv:2108.11395v3, Sec. II.
