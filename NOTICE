@@ -47,9 +47,9 @@ Upstream example IDs are shown where this repository renamed files:
 - **LP_*** (from upstream **PK_***): LP_1054_140_20 (PK_31; was LP_1054_140_17to32)
 - **TN_*** (shipped in this repo) — TN_36_8_3, TN_36_8_4, TN_54_11_4, TN_72_8_8,
   TN_72_14_4, TN_108_2_12, TN_144_2_13, TN_200_10_10, TN_250_10_15, TN_360_4_24 (was TN_360_4_ge17, then TN_360_4_17to24, TN_360_4_23to24),
-  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_23to24, TN_324_4_24to25, TN_396_4_24to26,
-  TN_432_8_24to29, TN_468_4_24to29, TN_496_2_29to30, TN_504_2_25to34, TN_540_4_25to34,
-  TN_576_2_25to37, TN_612_2_25to40, TN_648_10_23to32, TN_648_14_23to28, TN_684_2_24to29
+  TN_180_2_17, TN_216_4_18, TN_252_2_21, TN_288_2_24, TN_324_4_24to25, TN_396_4_24to26,
+  TN_432_8_25to29, TN_468_4_25to29, TN_496_2_30, TN_504_2_25to34, TN_540_4_25to34,
+  TN_576_2_26to37, TN_612_2_26to40, TN_648_10_23to32, TN_648_14_23to28, TN_684_2_25to29
   (upstream IDs and the full rename history of these stems: DistQLDPC NOTICE section 5)
 
 Redistribution of these files must retain the upstream MIT copyright and permission
@@ -97,20 +97,18 @@ GH-225 / GH-227 Tier 5 runs, guluchen/DistQLDPC#225 and #227, each reached by at
 different search trees: relabelled qubits and rows, a different row order, or a different binary;
 same engine, not an independent second method; upper bounds unchanged; renamed 2026-11-06 to mirror
 DistQLDPC),
-TN_288_2_23to24 (was TN_288_2_22to24), TN_432_8_24to29 (was TN_432_8_23to29),
-TN_468_4_24to29 (was TN_468_4_23to29), TN_576_2_25to37 (was TN_576_2_24to37),
-TN_612_2_25to40 (was TN_612_2_24to40), COLOR_1027_1_33to37 (was COLOR_1027_1_31to37),
-COLOR_2791_1_30to61 (was COLOR_2791_1_28to61), BB_1080_4_34to48 (was BB_1080_4_32to48),
-BB_756_16_34 (was BB_756_16_32to34; d = 34: the lower bound meets the verified upper bound),
-BB_864_4_34to40 (was BB_864_4_32to40), TN_324_4_24to25 (was TN_324_4_23to25),
-TN_540_4_25to34 (was TN_540_4_24to34), TN_648_14_23to28 (was TN_648_14_22to28),
-TN_360_4_24 (was TN_360_4_23to24; d = 24: the lower bound meets the verified upper bound),
-TN_396_4_24to26 (was TN_396_4_23to26), TN_496_2_29to30 (was TN_496_2_28to30),
-TN_504_2_25to34 (was TN_504_2_24to34), TN_648_10_23to32 (was TN_648_10_22to32)
-(lower bounds from DistQLDPC's optional CC engine in 12-36 h follow-up runs of guluchen/DistQLDPC#225,
-each reached by at least two runs with different search trees: DistQLDPC main's gated-erasure CC
-default and an ungated-erasure run of an earlier main, or a different row order; same engine, not an
-independent second method; upper bounds unchanged; renamed 2026-11-07 to mirror DistQLDPC).
+BB_1080_4_34to48 (was BB_1080_4_32to48), BB_756_16_34 (was BB_756_16_32to34), BB_864_4_34to40 (was
+BB_864_4_32to40), COLOR_1027_1_33to37 (was COLOR_1027_1_31to37), COLOR_2791_1_30to61 (was
+COLOR_2791_1_28to61), TN_288_2_24 (was TN_288_2_22to24), TN_324_4_24to25 (was TN_324_4_23to25),
+TN_360_4_24 (was TN_360_4_23to24), TN_396_4_24to26 (was TN_396_4_23to26), TN_432_8_25to29 (was
+TN_432_8_23to29), TN_468_4_25to29 (was TN_468_4_23to29), TN_496_2_30 (was TN_496_2_28to30),
+TN_504_2_25to34 (was TN_504_2_24to34), TN_540_4_25to34 (was TN_540_4_24to34), TN_576_2_26to37 (was
+TN_576_2_24to37), TN_612_2_26to40 (was TN_612_2_24to40), TN_648_10_23to32 (was TN_648_10_22to32),
+TN_648_14_23to28 (was TN_648_14_22to28), TN_684_2_25to29 (was TN_684_2_24to29)
+(lower bounds from DistQLDPC's optional CC engine in 12-36 h follow-up runs of guluchen/DistQLDPC#225, each
+reached by two runs with different search trees; BB_756_16_34, TN_288_2_24, TN_360_4_24 and TN_496_2_30 are exact:
+the lower bound meets the verified upper bound; same engine, not an independent second method; upper bounds
+unchanged; renamed 2026-11-07 to mirror DistQLDPC).
 
 For the canonical attribution text and preprocessing notes, see DistQLDPC
 [NOTICE](https://github.com/guluchen/DistQLDPC/blob/main/NOTICE). A vendored
